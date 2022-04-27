@@ -1,10 +1,17 @@
 <resources>
-    <string name="app_name">TaskMaster</string>
+    <string name="app_name">Task Master</string>
     <string name="addTaskB">Add Task</string>
-    <string name="allTaskB">All Task</string>
+    <string name="allTaskB">All Tasks</string>
     <string name="addTaskTitle">Add Task</string>
     <string name="task_title">Task Title</string>
     <string name="task_description">Task Description</string>
     <string name="total_tasks_0">Total tasks: 0</string>
+    <string name="edit_text_username">Username</string>
+    <string name="edit_text_password">Password</string>
+    <string name="save_username_password">Save</string>
+    <string name="action_settings">Settings</string>
+    <string name="action_copyright">About</string>
+    <string name="button_task_detail">No Tasks</string>
+    <string name="title_according_to_task_title">Title</string>
 
 </resources>
