@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/silver"
-    tools:context=".AddTaskActivity">
+    tools:context=".ui.AddTaskActivity">
 
 
     <TextView
@@ -16,8 +16,7 @@
         android:layout_marginTop="50dp"
         android:text="@string/addTaskB"
         android:textColor="@color/black"
-        android:textSize="40sp"
-        />
+        android:textSize="40sp" />
 
 
     <EditText
@@ -28,9 +27,9 @@
         android:layout_alignParentStart="true"
         android:layout_marginStart="15dp"
         android:layout_marginTop="50dp"
+        android:autofillHints=""
         android:hint="@string/task_title"
-        android:inputType="text"
-        android:autofillHints="" />
+        android:inputType="text" />
 
     <EditText
         android:id="@+id/taskDescriptionBox"
@@ -40,29 +39,40 @@
         android:layout_alignParentStart="true"
         android:layout_marginStart="15dp"
         android:layout_marginTop="50dp"
+        android:autofillHints=""
         android:hint="@string/task_description"
-        android:inputType="text"
-        android:autofillHints="" />
+        android:inputType="text" />
+
+
+    <Spinner
+        android:id="@+id/task_states_spinner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/taskDescriptionBox"
+        android:layout_alignParentStart="true"
+        android:layout_marginStart="15dp"
+        android:layout_marginTop="50dp"
+
+        />
 
 
     <Button
         android:id="@+id/createTaskButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/taskDescriptionBox"
+        android:drawableLeft="@drawable/add_task_icon"
+        android:layout_below="@+id/task_states_spinner"
+        android:layout_centerHorizontal="true"
         android:layout_marginTop="50dp"
         android:backgroundTint="@color/teal_700"
-        android:text="@string/addTaskB"
-        android:layout_centerHorizontal="true"
-        />
+        android:text="@string/addTaskB" />
 
     <TextView
+        android:id="@+id/tasksCount"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/tasksCount"
-        android:layout_marginTop="50dp"
-        android:layout_marginLeft="20dp"
-        android:text="@string/total_tasks_0"
         android:layout_below="@+id/createTaskButton"
-        />
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="50dp"
+        android:text="@string/total_tasks_0" />
 </RelativeLayout>

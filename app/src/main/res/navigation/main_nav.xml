@@ -7,7 +7,7 @@
 
     <activity
         android:id="@+id/addTaskActivity"
-        android:name="com.example.taskmaster.AddTaskActivity"
+        android:name="com.example.taskmaster.ui.AddTaskActivity"
         android:label="activity_add_task"
         tools:layout="@layout/activity_add_task" />
 

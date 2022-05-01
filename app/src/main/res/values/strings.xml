@@ -14,4 +14,13 @@
     <string name="button_task_detail">No Tasks</string>
     <string name="title_according_to_task_title">Title</string>
 
+    <string-array name="task_states_array">
+        <item>State</item>
+        <item>New</item>
+        <item>Assigned</item>
+        <item>In progress</item>
+        <item>Completed</item>
+    </string-array>
+
 </resources>
+

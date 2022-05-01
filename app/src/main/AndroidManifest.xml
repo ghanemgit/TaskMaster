@@ -10,27 +10,30 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.TaskMaster">
         <activity
-            android:name=".SettingActivity"
-            android:label="@string/action_settings"
-            android:parentActivityName=".MainActivity"
+            android:name=".ui.RecyclerViewActivity"
             android:exported="false" />
         <activity
-            android:name=".TaskDetailsActivity"
-            android:parentActivityName=".MainActivity"
+            android:name=".ui.SettingActivity"
             android:exported="false"
-            android:label="@string/title_according_to_task_title" />
+            android:label="@string/action_settings"
+            android:parentActivityName=".ui.MainActivity" />
         <activity
-            android:name=".AllTasksActivity"
-            android:parentActivityName=".MainActivity"
+            android:name=".ui.TaskDetailsActivity"
+            android:exported="false"
+            android:label="@string/title_according_to_task_title"
+            android:parentActivityName=".ui.MainActivity" />
+        <activity
+            android:name=".ui.AllTasksActivity"
+            android:exported="false"
             android:label="All Tasks"
-            android:exported="false" />
+            android:parentActivityName=".ui.MainActivity" />
         <activity
-            android:name=".AddTaskActivity"
-            android:parentActivityName=".MainActivity"
+            android:name=".ui.AddTaskActivity"
+            android:exported="false"
             android:label="Add Task"
-            android:exported="false" />
+            android:parentActivityName=".ui.MainActivity" />
         <activity
-            android:name=".MainActivity"
+            android:name=".ui.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

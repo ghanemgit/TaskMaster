@@ -5,7 +5,7 @@
 
 Home Page            |   Overflow menu  |  
 :-------------------------:|:-------------------------:|
-![Home Page](Screenshot_20220427-181550.jpg) |  ![Home Page](Screenshot_20220427-181614.jpg)|
+![Home Page](Screenshot_20220427-181550.jpg) |  ![Overflow menu](Screenshot_20220427-181614.jpg)|
 
 
 
@@ -15,7 +15,7 @@ Home Page            |   Overflow menu  |
 
 All task page  |  Settings
 :-------------------------:|:-------------------------:
-![Home Page](Screenshot_20220427-181608.jpg)|![Home Page](Screenshot_20220427-181620.jpg)|
+![All task ](Screenshot_20220427-181608.jpg)|![Settings](Screenshot_20220427-181620.jpg)|
 
 
 
