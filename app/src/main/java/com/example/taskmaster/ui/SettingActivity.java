@@ -1,4 +1,4 @@
-package com.example.taskmaster;
+package com.example.taskmaster.ui;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -44,31 +44,32 @@ public class SettingActivity extends AppCompatActivity {
 
         saveUserButton.setOnClickListener(view -> {
 
-            if (TextUtils.isEmpty(mUsername.getText()) || TextUtils.isEmpty(mPassword.getText())){
+            if (TextUtils.isEmpty(mUsername.getText()) || TextUtils.isEmpty(mPassword.getText())) {
                 mUsername.setError("username is required");
                 mPassword.setError("password is required");
-            }else {
+            } else {
                 saveUser();
                 Toast.makeText(this, "Saved", Toast.LENGTH_SHORT).show();
             }
 
             View view2 = this.getCurrentFocus();
             if (view2 != null) {
-                InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
                 imm.hideSoftInputFromWindow(view2.getWindowToken(), 0);
             }
         });
     }
-    private void saveUser(){
+
+    private void saveUser() {
         String username = mUsername.getText().toString();
         String password = mPassword.getText().toString();
 
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         SharedPreferences.Editor preferenceEditor = sharedPreferences.edit();
 
-        preferenceEditor.putString(USERNAME,username);
+        preferenceEditor.putString(USERNAME, username);
         preferenceEditor.apply();
-        preferenceEditor.putString(PASSWORD,password);
+        preferenceEditor.putString(PASSWORD, password);
         preferenceEditor.apply();
 
         Log.i(TAG, "saveUser: The username is =>" + username);

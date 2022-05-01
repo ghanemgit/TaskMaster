@@ -16,3 +16,13 @@
 
 #### Today I add many features to my application, lets start talk about it, first of all I created the setting page and let the user to save his/her name and I put it as overflow menu and I make the username rendered to home page also I added the task as button titled with task name by the way I enabled the user to save the task by shared preference class also I added the back button on the navigation bar and open the all tasks section and you will find the user task and you can click on it and see the details of that task.  
 ### This is some screenshot for my work today you can see it [here](ScreenShot/SecondDay/SecondeDay.md)
+
+
+## Third Day
+
+#### Today I learned how to build Recycle view to display the content of tasks list and learn how to set the look of each object inside the list by creating custom list recycler view to show the tasks as a list and set what happen when you click on the each task, that's will direct you to task details page where you can see the description and state of the task.
+### The changes included in this release
+- Refactor the home page to show the tasks list.
+- Move the Add task and all task button to over flow menu at the top right.
+- Add spinner to add task form represent the states of the task.
+### This is some screenshot for my work today you can see it [here](ScreenShot//SecondeDay.md)
