@@ -44,6 +44,16 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"/>
 
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/add_task_button_floating"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginBottom="30dp"
+        android:layout_marginEnd="20dp"
+        android:src="@drawable/add_task_icon"
+        android:contentDescription="@string/addTaskB" />
 
 <!--    <ImageView-->
 <!--        android:id="@+id/imageView"-->
