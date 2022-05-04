@@ -23,6 +23,7 @@ import android.widget.Toast;
 import com.example.taskmaster.R;
 import com.example.taskmaster.data.TaskData;
 import com.example.taskmaster.data.TaskState;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,13 +35,13 @@ public class MainActivity extends AppCompatActivity {
     List<TaskData> taskDataList = new ArrayList<>();
 
 
-    private View.OnClickListener mAddTaskButtonListener = view -> {
+//    private View.OnClickListener mAddTaskButtonListener = view -> {
+//
+//        Intent startAddTaskActivityIntent = new Intent(getApplicationContext(), AddTaskActivity.class);
+//        startActivity(startAddTaskActivityIntent);
+//
+//    };
 
-        Intent startAddTaskActivityIntent = new Intent(getApplicationContext(), AddTaskActivity.class);
-        startActivity(startAddTaskActivityIntent);
-
-    };
-    private Button taskTitleButton;
 
 
     @Override
@@ -50,12 +51,23 @@ public class MainActivity extends AppCompatActivity {
         Log.i(TAG, "onCreate: called");
 
         usernameWelcoming = findViewById(R.id.username_welcoming);
+
+        /*
+        https://developer.android.com/guide/topics/ui/floating-action-button
+         */
+        FloatingActionButton floatAddTaskButton = findViewById(R.id.add_task_button_floating);
 //        Button addTaskButton =  findViewById(R.id.addTaskButton);
 //        Button allTasksButton =  findViewById(R.id.allTaskButton);
 //        taskTitleButton = findViewById(R.id.task_details_button);
 
+        floatAddTaskButton.setOnClickListener(view -> navigateToAddTaskPage());
+
+
+
 
         getTasksListToHomePage();
+
+
 
 
 //        addTaskButton.setOnClickListener(view -> {
@@ -68,6 +80,8 @@ public class MainActivity extends AppCompatActivity {
 
 
     }
+
+
 
     @Override
     protected void onStart() {
@@ -116,9 +130,9 @@ public class MainActivity extends AppCompatActivity {
             case R.id.action_copyright:
                 Toast.makeText(this, "Copyright 2022", Toast.LENGTH_SHORT).show();
                 return true;
-            case R.id.action_add_task:
-                navigateToAddTaskPage();
-                return true;
+//            case R.id.action_add_task:
+//                navigateToAddTaskPage();
+//                return true;
             case R.id.action_all_tasks:
                 navigateToAllTaskPage();
                 return true;
@@ -166,6 +180,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void initialiseData() {
 
+        addInputFromUserToList();
         taskDataList.add(new TaskData("Bring Ingredients", "Go to market and bring some " +
                 "milk and 5 eggs and some butter and don't forget the flour", TaskState.In_progress));
         taskDataList.add(new TaskData("Sort Ingredients", "Sort our Ingredients according to" +
@@ -173,10 +188,12 @@ public class MainActivity extends AppCompatActivity {
         taskDataList.add(new TaskData("Bring Helper Tools", "Go and bring all the necessary helper tools" +
                 " like Wooden spoon ,Measuring cup ,Mixing bowl and spatula etc..", TaskState.Assigned));
 
+
     }
 
 
     private void getTasksListToHomePage() {
+
         initialiseData();
 
         ListView tasksList = findViewById(R.id.list_tasks_main);
@@ -213,5 +230,29 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+    }
+
+    private void addInputFromUserToList() {
+
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        String title = sharedPreferences.getString(AddTaskActivity.TASK_TITLE,"Title");
+        String description = sharedPreferences.getString(AddTaskActivity.TASK_DESCRIPTION,"Description");
+        String state = sharedPreferences.getString(AddTaskActivity.TASK_STATE,"State");
+        TaskState taskState;
+        Log.i(TAG, "addInputFromUserToList: The State is => "+state);
+        switch (state){
+            case "Assigned":
+                taskState = TaskState.Assigned;
+                break;
+            case "In progress":
+                taskState = TaskState.In_progress;
+                break;
+            case "Completed":
+                taskState = TaskState.Complete;
+                break;
+            default:
+                taskState= TaskState.New;
+        }
+        taskDataList.add(new TaskData(title,description,taskState));
     }
 }

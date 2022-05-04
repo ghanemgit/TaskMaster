@@ -23,6 +23,8 @@
 #### Today I learned how to build Recycle view to display the content of tasks list and learn how to set the look of each object inside the list by creating custom list recycler view to show the tasks as a list and set what happen when you click on the each task, that's will direct you to task details page where you can see the description and state of the task.
 ### The changes included in this release
 - Refactor the home page to show the tasks list.
-- Move the Add task and all task button to over flow menu at the top right.
+- Move the all task button to over flow menu at the top right.
 - Add spinner to add task form represent the states of the task.
+- Now the task added by the user (Shared preference) is also added to the list shown in the home screen.
+- Add New Task button as a floating point at the home screen.
 ### This is some screenshot for my work today you can see it [here](ScreenShot/ThirdDay/ThirdDay.md)

@@ -5,7 +5,7 @@
 
 Home Page            |       Home Page                            |  Task Details  |
 :-------------------------:|:--------------------------------------------:|:-------------------------:|
-![Home Page](Screenshot_20220502-001026.jpg) | ![Home PAge](Screenshot_20220502-001030.jpg) | ![Task Details](Screenshot_20220502-001038.jpg)|
+![Home Page](Screenshot_20220505-022559.jpg) | ![Home PAge](Screenshot_20220502-001030.jpg) | ![Task Details](Screenshot_20220502-001038.jpg)|
 
 
 
