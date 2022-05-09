@@ -8,14 +8,14 @@ import android.content.Intent;
 import android.os.Bundle;
 
 import com.example.taskmaster.R;
-import com.example.taskmaster.data.TaskData;
+import com.example.taskmaster.data.Task;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class RecyclerViewActivity extends AppCompatActivity {
 
-    List<TaskData> taskDataList = new ArrayList<>();
+    List<Task> taskList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,7 +25,7 @@ public class RecyclerViewActivity extends AppCompatActivity {
 
         RecyclerView recyclerView = findViewById(R.id.recycler_view);
 
-        CustomListRecyclerViewAdapter customListRecyclerViewAdapter = new CustomListRecyclerViewAdapter(taskDataList
+        CustomListRecyclerViewAdapter customListRecyclerViewAdapter = new CustomListRecyclerViewAdapter(taskList
                 , position -> navigateToTaskDetailsPage());
 
 

@@ -9,17 +9,17 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.taskmaster.R;
-import com.example.taskmaster.data.TaskData;
+import com.example.taskmaster.data.Task;
 
 import java.util.List;
 
 public class CustomListRecyclerViewAdapter extends RecyclerView.Adapter<CustomListRecyclerViewAdapter.CustomViewHolder> {
 
 
-    List<TaskData> dataList;
+    List<Task> dataList;
     CustomClickListener listener;
 
-    public CustomListRecyclerViewAdapter(List<TaskData> dataList, CustomClickListener listener) {
+    public CustomListRecyclerViewAdapter(List<Task> dataList, CustomClickListener listener) {
         this.dataList = dataList;
         this.listener = listener;
     }

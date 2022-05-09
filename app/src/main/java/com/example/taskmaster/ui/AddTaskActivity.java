@@ -3,6 +3,7 @@ package com.example.taskmaster.ui;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -17,6 +18,8 @@ import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.example.taskmaster.R;
+import com.example.taskmaster.data.AppDatabase;
+import com.example.taskmaster.data.Task;
 import com.example.taskmaster.data.TaskState;
 
 import java.util.Objects;
@@ -44,14 +47,14 @@ public class AddTaskActivity extends AppCompatActivity {
 
         /*
         https://www.youtube.com/watch?v=FcPUFp8Qrps&ab_channel=LemubitAcademy
-        In this video i learned how to add back button in action bar
-         */
+        In this video I learned how to add back button in action bar
+        */
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
 
         setAdapterToStatesTaskArraySpinner();
 
         addTaskButton.setOnClickListener(view -> {
-
+            Intent intent = new Intent(this,MainActivity.class);
             if (TextUtils.isEmpty(taskTitle.getText()) || TextUtils.isEmpty(taskDescription.getText())) {
 
                 taskTitle.setError("Title is Required");
@@ -59,6 +62,7 @@ public class AddTaskActivity extends AppCompatActivity {
             } else {
                 Toast.makeText(this, "Submitted!", Toast.LENGTH_SHORT).show();
                 saveTask();
+                startActivity(intent);
             }
 
             View view2 = this.getCurrentFocus();
@@ -91,7 +95,22 @@ public class AddTaskActivity extends AppCompatActivity {
         Log.i(TAG, "saveTask: The title is " + taskTitleString);
         Log.i(TAG, "saveTask: The Description is " + taskDescriptionString);
 
-
+        TaskState taskState;
+        switch (taskStateString){
+            case "Assigned":
+                taskState = TaskState.Assigned;
+                break;
+            case "In progress":
+                taskState = TaskState.In_progress;
+                break;
+            case "Completed":
+                taskState = TaskState.Complete;
+                break;
+            default:
+                taskState= TaskState.New;
+        }
+        Task newTask = new Task(taskTitleString,taskDescriptionString,taskState);
+        AppDatabase.getInstance(getApplicationContext()).taskDao().insertTask(newTask);
     }
 
 
@@ -101,7 +120,7 @@ public class AddTaskActivity extends AppCompatActivity {
         https://developer.android.com/guide/topics/ui/controls/spinner
          */
 
-        Spinner spinner = (Spinner) findViewById(R.id.task_states_spinner);
+        Spinner spinner =  findViewById(R.id.task_states_spinner);
         // Create an ArrayAdapter using the string array and a default spinner layout
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
                 R.array.task_states_array, android.R.layout.simple_spinner_item);

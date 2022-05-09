@@ -1,22 +1,12 @@
 package com.example.taskmaster.ui;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
-import android.view.View;
-import android.widget.AdapterView;
 import android.widget.TextView;
 
 import com.example.taskmaster.R;
-import com.example.taskmaster.data.TaskData;
-import com.example.taskmaster.data.TaskState;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 
 public class TaskDetailsActivity extends AppCompatActivity {
