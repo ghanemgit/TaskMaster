@@ -15,13 +15,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.taskmaster.R;
-import com.example.taskmaster.data.TaskData;
+import com.example.taskmaster.data.AppDatabase;
+import com.example.taskmaster.data.Task;
+import com.example.taskmaster.data.TaskDao;
 import com.example.taskmaster.data.TaskState;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -32,7 +33,10 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
     private TextView usernameWelcoming;
-    List<TaskData> taskDataList = new ArrayList<>();
+    private List<Task> taskList;
+
+
+
 
 
 //    private View.OnClickListener mAddTaskButtonListener = view -> {
@@ -99,6 +103,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         setUsername();
+        getTasksListToHomePage();
         super.onResume();
         Log.i(TAG, "onResume: called");
     }
@@ -130,14 +135,9 @@ public class MainActivity extends AppCompatActivity {
             case R.id.action_copyright:
                 Toast.makeText(this, "Copyright 2022", Toast.LENGTH_SHORT).show();
                 return true;
-//            case R.id.action_add_task:
-//                navigateToAddTaskPage();
-//                return true;
             case R.id.action_all_tasks:
                 navigateToAllTaskPage();
                 return true;
-
-
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -180,13 +180,15 @@ public class MainActivity extends AppCompatActivity {
 
     private void initialiseData() {
 
-        addInputFromUserToList();
-        taskDataList.add(new TaskData("Bring Ingredients", "Go to market and bring some " +
-                "milk and 5 eggs and some butter and don't forget the flour", TaskState.In_progress));
-        taskDataList.add(new TaskData("Sort Ingredients", "Sort our Ingredients according to" +
-                " when we will use it and start clean the place where we will work", TaskState.Assigned));
-        taskDataList.add(new TaskData("Bring Helper Tools", "Go and bring all the necessary helper tools" +
-                " like Wooden spoon ,Measuring cup ,Mixing bowl and spatula etc..", TaskState.Assigned));
+//        addInputFromUserToList();
+//        taskList.add(new Task("Bring Ingredients", "Go to market and bring some " +
+//                "milk and 5 eggs and some butter and don't forget the flour", TaskState.In_progress));
+//        taskList.add(new Task("Sort Ingredients", "Sort our Ingredients according to" +
+//                " when we will use it and start clean the place where we will work", TaskState.Assigned));
+//        taskList.add(new Task("Bring Helper Tools", "Go and bring all the necessary helper tools" +
+//                " like Wooden spoon ,Measuring cup ,Mixing bowl and spatula etc..", TaskState.Assigned));
+
+        taskList = AppDatabase.getInstance(this).taskDao().getAll();
 
 
     }
@@ -198,21 +200,21 @@ public class MainActivity extends AppCompatActivity {
 
         ListView tasksList = findViewById(R.id.list_tasks_main);
 
-        ArrayAdapter<TaskData> taskDataArrayAdapter = new ArrayAdapter<TaskData>(
+        ArrayAdapter<Task> taskDataArrayAdapter = new ArrayAdapter<Task>(
                 this
                 , android.R.layout.simple_list_item_2
                 , android.R.id.text2
-                , taskDataList) {
+                , taskList) {
             @NonNull
             @Override
             public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
                 View view = super.getView(position, convertView, parent);
 
-                TextView title = (TextView) view.findViewById(android.R.id.text1);
-                TextView state = (TextView) view.findViewById(android.R.id.text2);
+                TextView title =  view.findViewById(android.R.id.text1);
+                TextView state =  view.findViewById(android.R.id.text2);
 
-                title.setText(taskDataList.get(position).getTitle());
-                state.setText(taskDataList.get(position).getTaskState().getDisplayValue());
+                title.setText(taskList.get(position).getTitle());
+                state.setText(taskList.get(position).getTaskState().getDisplayValue());
 
                 return view;
             }
@@ -223,9 +225,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 Intent intent = new Intent(getApplicationContext(), TaskDetailsActivity.class);
-                intent.putExtra("Title",taskDataList.get(i).getTitle());
-                intent.putExtra("State",taskDataList.get(i).getTaskState().getDisplayValue());
-                intent.putExtra("Body",taskDataList.get(i).getBody());
+                intent.putExtra("Title", taskList.get(i).getTitle());
+                intent.putExtra("State", taskList.get(i).getTaskState().getDisplayValue());
+                intent.putExtra("Body", taskList.get(i).getBody());
 
                 startActivity(intent);
             }
@@ -253,6 +255,6 @@ public class MainActivity extends AppCompatActivity {
             default:
                 taskState= TaskState.New;
         }
-        taskDataList.add(new TaskData(title,description,taskState));
+        taskList.add(new Task(title,description,taskState));
     }
 }
