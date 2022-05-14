@@ -38,11 +38,11 @@ public class AllTasksActivity extends AppCompatActivity {
                 this
                 , android.R.layout.simple_list_item_2
                 , android.R.id.text2
-                , taskList){
+                , taskList) {
             @NonNull
             @Override
             public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-                View view = super.getView(position,convertView,parent);
+                View view = super.getView(position, convertView, parent);
 
                 TextView title = (TextView) view.findViewById(android.R.id.text1);
                 TextView state = (TextView) view.findViewById(android.R.id.text2);

@@ -41,7 +41,7 @@ public class AddTaskActivity extends AppCompatActivity {
         setContentView(R.layout.activity_add_task);
 
         Button addTaskButton = findViewById(R.id.createTaskButton);
-        taskTitle = findViewById(R.id.taskTitleBox);
+        taskTitle = (EditText) findViewById(R.id.taskTitleBox);
         taskDescription = findViewById(R.id.taskDescriptionBox);
         taskState = findViewById(R.id.task_states_spinner);
 
@@ -54,7 +54,7 @@ public class AddTaskActivity extends AppCompatActivity {
         setAdapterToStatesTaskArraySpinner();
 
         addTaskButton.setOnClickListener(view -> {
-            Intent intent = new Intent(this,MainActivity.class);
+            Intent intent = new Intent(this, MainActivity.class);
             if (TextUtils.isEmpty(taskTitle.getText()) || TextUtils.isEmpty(taskDescription.getText())) {
 
                 taskTitle.setError("Title is Required");
@@ -80,7 +80,7 @@ public class AddTaskActivity extends AppCompatActivity {
         String taskDescriptionString = taskDescription.getText().toString();
         String taskStateString = taskState.getSelectedItem().toString();
 
-        Log.i(TAG, "saveTask: TaskStateString is =>  "+taskStateString);
+        Log.i(TAG, "saveTask: TaskStateString is =>  " + taskStateString);
 
         SharedPreferences addTaskPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         SharedPreferences.Editor editor = addTaskPreferences.edit();
@@ -89,14 +89,14 @@ public class AddTaskActivity extends AppCompatActivity {
         editor.apply();
         editor.putString(TASK_DESCRIPTION, taskDescriptionString);
         editor.apply();
-        editor.putString(TASK_STATE,taskStateString);
+        editor.putString(TASK_STATE, taskStateString);
         editor.apply();
 
         Log.i(TAG, "saveTask: The title is " + taskTitleString);
         Log.i(TAG, "saveTask: The Description is " + taskDescriptionString);
 
         TaskState taskState;
-        switch (taskStateString){
+        switch (taskStateString) {
             case "Assigned":
                 taskState = TaskState.Assigned;
                 break;
@@ -104,12 +104,13 @@ public class AddTaskActivity extends AppCompatActivity {
                 taskState = TaskState.In_progress;
                 break;
             case "Completed":
-                taskState = TaskState.Complete;
+                taskState = TaskState.Completed;
                 break;
             default:
-                taskState= TaskState.New;
+                taskState = TaskState.New;
         }
-        Task newTask = new Task(taskTitleString,taskDescriptionString,taskState);
+
+        Task newTask = new Task(taskTitleString, taskDescriptionString, taskState);
         AppDatabase.getInstance(getApplicationContext()).taskDao().insertTask(newTask);
     }
 
@@ -120,7 +121,7 @@ public class AddTaskActivity extends AppCompatActivity {
         https://developer.android.com/guide/topics/ui/controls/spinner
          */
 
-        Spinner spinner =  findViewById(R.id.task_states_spinner);
+        Spinner spinner = findViewById(R.id.task_states_spinner);
         // Create an ArrayAdapter using the string array and a default spinner layout
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
                 R.array.task_states_array, android.R.layout.simple_spinner_item);

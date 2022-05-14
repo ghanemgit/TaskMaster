@@ -6,6 +6,8 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Typeface;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -16,37 +18,26 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.taskmaster.R;
 import com.example.taskmaster.data.AppDatabase;
 import com.example.taskmaster.data.Task;
-import com.example.taskmaster.data.TaskDao;
 import com.example.taskmaster.data.TaskState;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
     private TextView usernameWelcoming;
     private List<Task> taskList;
-
-
-
-
-
-//    private View.OnClickListener mAddTaskButtonListener = view -> {
-//
-//        Intent startAddTaskActivityIntent = new Intent(getApplicationContext(), AddTaskActivity.class);
-//        startActivity(startAddTaskActivityIntent);
-//
-//    };
-
-
+    private String selectedItem = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,36 +46,44 @@ public class MainActivity extends AppCompatActivity {
         Log.i(TAG, "onCreate: called");
 
         usernameWelcoming = findViewById(R.id.username_welcoming);
-
         /*
         https://developer.android.com/guide/topics/ui/floating-action-button
          */
         FloatingActionButton floatAddTaskButton = findViewById(R.id.add_task_button_floating);
-//        Button addTaskButton =  findViewById(R.id.addTaskButton);
-//        Button allTasksButton =  findViewById(R.id.allTaskButton);
-//        taskTitleButton = findViewById(R.id.task_details_button);
 
+        //Floating add task button in main activity
         floatAddTaskButton.setOnClickListener(view -> navigateToAddTaskPage());
 
+        //set adapter for filter tasks spinner
+        setAdapterToStatesTaskArraySpinner();
 
-
-
+        //render the tasks to home page
         getTasksListToHomePage();
 
+        /*
+         * https://stackoverflow.com/questions/12108893/set-onclicklistener-for-spinner-item
+         * And as mr.Json tell us in the lecture
+         * This spinner is responsible to filter the task for user by states
+         */
+        Spinner sortSpinner = findViewById(R.id.task_states_filter_spinner);
+        sortSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                selectedItem = adapterView.getItemAtPosition(i).toString();
+                initialiseData();
+                /*
+                 * https://stackoverflow.com/questions/3053761/reload-activity-in-android
+                 * how to refresh the activity
+                 */
+                onResume();
+            }
 
-
-
-//        addTaskButton.setOnClickListener(view -> {
-//            navigateToAddTaskPage();
-//        });
-//
-//        allTasksButton.setOnClickListener(view -> {
-//            navigateToAllTaskPage();
-//        });
-
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+            }
+        });
 
     }
-
 
 
     @Override
@@ -126,6 +125,7 @@ public class MainActivity extends AppCompatActivity {
         Log.i(TAG, "onDestroy: called");
     }
 
+    //Set what happens when click on item from the overflow menu
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
@@ -165,9 +165,7 @@ public class MainActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
-
-
-
+    //Set up the username details to show it in the home screen
     public void setUsername() {
 
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
@@ -180,17 +178,43 @@ public class MainActivity extends AppCompatActivity {
 
     private void initialiseData() {
 
-//        addInputFromUserToList();
-//        taskList.add(new Task("Bring Ingredients", "Go to market and bring some " +
-//                "milk and 5 eggs and some butter and don't forget the flour", TaskState.In_progress));
-//        taskList.add(new Task("Sort Ingredients", "Sort our Ingredients according to" +
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        String noOfTaskToShow = sharedPreferences.getString(SettingActivity.NO_OF_TASK_TO_SHOW, "");
+        int num = 0;
+        if (!Objects.equals(noOfTaskToShow, "")) {
+            num = Integer.parseInt(noOfTaskToShow);
+        }
+        Log.i(TAG, "initialiseData: The value of num is = " + num);
+
+
+        /*
+         * To initial the app in first time open but if you keep it without comment,
+         * every time you call the main activity will add these tasks to database and show it in the home screen
+         */
+//        AppDatabase.getInstance(this).taskDao().insertTask(new Task("Bring Ingredients", "Go to market and bring some milk and 5 eggs and some butter and don't forget the flour"
+//        , TaskState.In_progress));
+//        AppDatabase.getInstance(this).taskDao().insertTask(new Task("Sort Ingredients", "Sort our Ingredients according to" +
 //                " when we will use it and start clean the place where we will work", TaskState.Assigned));
-//        taskList.add(new Task("Bring Helper Tools", "Go and bring all the necessary helper tools" +
-//                " like Wooden spoon ,Measuring cup ,Mixing bowl and spatula etc..", TaskState.Assigned));
+//        AppDatabase.getInstance(this).taskDao().insertTask(new Task("Bring Helper Tools", "Go and bring all the necessary helper tools" +
+//                " like Wooden spoon ,Measuring cup ,Mixing bowl and spatula etc..", TaskState.Completed));
 
-        taskList = AppDatabase.getInstance(this).taskDao().getAll();
-
-
+        /*
+         * This switch to help user to show specific tasks according to states of tasks
+         * This used the lambda form as we learned to filter the tasks from the database
+         */
+        switch (selectedItem) {
+            case "New":
+            case "Assigned":
+            case "In progress":
+            case "Completed":
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    taskList = AppDatabase.getInstance(this).taskDao().getAll().stream().filter(
+                            task -> task.getTaskState().getDisplayValue().equals(selectedItem)).collect(Collectors.toList());
+                }
+                break;
+            default:
+                taskList = AppDatabase.getInstance(this).taskDao().getAll();
+        }
     }
 
 
@@ -210,8 +234,14 @@ public class MainActivity extends AppCompatActivity {
             public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
                 View view = super.getView(position, convertView, parent);
 
-                TextView title =  view.findViewById(android.R.id.text1);
-                TextView state =  view.findViewById(android.R.id.text2);
+                TextView title = view.findViewById(android.R.id.text1);
+                TextView state = view.findViewById(android.R.id.text2);
+
+                /*
+                 * How to set the text style from java side
+                 * https://www.codegrepper.com/code-examples/whatever/make+text+bold+android+studio
+                 */
+                title.setTypeface(null, Typeface.BOLD_ITALIC);
 
                 title.setText(taskList.get(position).getTitle());
                 state.setText(taskList.get(position).getTaskState().getDisplayValue());
@@ -221,40 +251,26 @@ public class MainActivity extends AppCompatActivity {
         };
         tasksList.setAdapter(taskDataArrayAdapter);
 
-        tasksList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                Intent intent = new Intent(getApplicationContext(), TaskDetailsActivity.class);
-                intent.putExtra("Title", taskList.get(i).getTitle());
-                intent.putExtra("State", taskList.get(i).getTaskState().getDisplayValue());
-                intent.putExtra("Body", taskList.get(i).getBody());
-
-                startActivity(intent);
-            }
+        tasksList.setOnItemClickListener((adapterView, view, i, l) -> {
+            Intent intent = new Intent(getApplicationContext(), TaskDetailsActivity.class);
+            intent.putExtra("Position", taskList.get(i).getId());
+            startActivity(intent);
         });
     }
 
-    private void addInputFromUserToList() {
 
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        String title = sharedPreferences.getString(AddTaskActivity.TASK_TITLE,"Title");
-        String description = sharedPreferences.getString(AddTaskActivity.TASK_DESCRIPTION,"Description");
-        String state = sharedPreferences.getString(AddTaskActivity.TASK_STATE,"State");
-        TaskState taskState;
-        Log.i(TAG, "addInputFromUserToList: The State is => "+state);
-        switch (state){
-            case "Assigned":
-                taskState = TaskState.Assigned;
-                break;
-            case "In progress":
-                taskState = TaskState.In_progress;
-                break;
-            case "Completed":
-                taskState = TaskState.Complete;
-                break;
-            default:
-                taskState= TaskState.New;
-        }
-        taskList.add(new Task(title,description,taskState));
+    private void setAdapterToStatesTaskArraySpinner() {
+
+        /*
+        https://developer.android.com/guide/topics/ui/controls/spinner
+         */
+        Spinner spinner = findViewById(R.id.task_states_filter_spinner);
+        // Create an ArrayAdapter using the string array and a default spinner layout
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
+                R.array.task_states_filter_array, android.R.layout.simple_spinner_item);
+        // Specify the layout to use when the list of choices appears
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        // Apply the adapter to the spinner
+        spinner.setAdapter(adapter);
     }
 }

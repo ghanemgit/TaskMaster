@@ -1,6 +1,7 @@
 package com.example.taskmaster.data;
 
 
+import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
@@ -13,13 +14,13 @@ public class Task {
     private Long id;
 
     @ColumnInfo(name = "Title")
-    private final String title;
+    private  String title;
 
     @ColumnInfo(name = "Body")
-    private final String body;
+    private  String body;
 
     @ColumnInfo(name = "Task_state")
-    private final TaskState taskState;
+    private  TaskState taskState;
 
     public Task(String title, String body, TaskState taskState) {
         this.title = title;
@@ -45,5 +46,28 @@ public class Task {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public void setBody(String body) {
+        this.body = body;
+    }
+
+    public void setTaskState(TaskState taskState) {
+        this.taskState = taskState;
+    }
+
+    @NonNull
+    @Override
+    public String toString() {
+        return "Task{" +
+                "id=" + id +
+                ", title='" + title + '\'' +
+                ", body='" + body + '\'' +
+                ", taskState=" + taskState.getDisplayValue() +
+                '}';
     }
 }
