@@ -28,9 +28,9 @@ public class CustomListRecyclerViewAdapter extends RecyclerView.Adapter<CustomLi
     @Override
     public CustomViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         LayoutInflater layoutInflater = LayoutInflater.from(parent.getContext());
-        View listItemView = layoutInflater.inflate(R.layout.task_item_layout,parent,false);
+        View listItemView = layoutInflater.inflate(R.layout.task_item_layout, parent, false);
 
-        return new CustomViewHolder(listItemView,listener);
+        return new CustomViewHolder(listItemView, listener);
 
     }
 
@@ -49,14 +49,14 @@ public class CustomListRecyclerViewAdapter extends RecyclerView.Adapter<CustomLi
         return dataList.size();
     }
 
-    public static class CustomViewHolder extends RecyclerView.ViewHolder{
+    public static class CustomViewHolder extends RecyclerView.ViewHolder {
 
         TextView title;
         TextView body;
         TextView state;
 
 
-        public CustomViewHolder(@NonNull View itemView,CustomClickListener listener) {
+        public CustomViewHolder(@NonNull View itemView, CustomClickListener listener) {
             super(itemView);
 
             title = itemView.findViewById(R.id.title);
@@ -67,6 +67,7 @@ public class CustomListRecyclerViewAdapter extends RecyclerView.Adapter<CustomLi
 
         }
     }
+
     public interface CustomClickListener {
         void onTaskClicked(int position);
     }

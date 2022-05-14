@@ -9,69 +9,72 @@
 
 
     <TextView
-        android:id="@+id/addTaskTitle"
+        android:id="@+id/updateTaskTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="25dp"
         android:layout_marginTop="50dp"
-        android:text="@string/addTaskB"
+        android:text="@string/update_task_title"
         android:textColor="@color/black"
         android:textSize="40sp" />
 
 
     <EditText
-        android:id="@+id/taskTitleBox"
+        android:id="@+id/updateTaskTitleBox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/addTaskTitle"
+        android:layout_below="@+id/updateTaskTitle"
         android:layout_alignParentStart="true"
         android:layout_marginStart="15dp"
-        android:layout_marginTop="50dp"
+        android:layout_marginTop="25dp"
         android:autofillHints=""
         android:hint="@string/task_title"
         android:inputType="textMultiLine" />
 
     <EditText
-        android:id="@+id/taskDescriptionBox"
+        android:id="@+id/updateTaskDescriptionBox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/taskTitleBox"
+        android:layout_below="@+id/updateTaskTitleBox"
         android:layout_alignParentStart="true"
         android:layout_marginStart="15dp"
-        android:layout_marginTop="50dp"
+        android:layout_marginTop="25dp"
         android:autofillHints=""
         android:hint="@string/task_description"
         android:inputType="textMultiLine" />
 
 
     <Spinner
-        android:id="@+id/task_states_spinner"
+        android:id="@+id/update_task_states_spinner"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/taskDescriptionBox"
+        android:layout_below="@+id/updateTaskDescriptionBox"
         android:layout_alignParentStart="true"
         android:layout_marginStart="15dp"
         android:layout_marginTop="50dp"
+
         />
 
 
     <Button
-        android:id="@+id/createTaskButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:drawableLeft="@drawable/add_task_icon"
-        android:layout_below="@+id/task_states_spinner"
+        android:id="@+id/updateTaskButton"
+        android:layout_width="110dp"
+        android:layout_height="47dp"
+        android:layout_below="@+id/update_task_states_spinner"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="50dp"
+        android:layout_marginTop="25dp"
         android:backgroundTint="@color/teal_700"
-        android:text="@string/addTaskB" />
+        android:text="Save" />
 
-    <TextView
-        android:id="@+id/tasksCount"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/createTaskButton"
-        android:layout_marginStart="20dp"
-        android:layout_marginTop="50dp"
-        android:text="@string/total_tasks_0" />
+    <Button
+        android:id="@+id/backToDescriptionPage"
+        android:layout_width="110dp"
+        android:layout_height="47dp"
+        android:layout_below="@+id/updateTaskButton"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="15dp"
+        android:backgroundTint="@color/teal_700"
+        android:text="Cancel" />
+
+
 </RelativeLayout>

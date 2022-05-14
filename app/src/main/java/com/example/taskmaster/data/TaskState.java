@@ -5,7 +5,7 @@ public enum TaskState {
     New("New"),
     Assigned("Assigned"),
     In_progress("In progress"),
-    Complete("Complete");
+    Completed("Completed");
 
 
     private final String displayValue;

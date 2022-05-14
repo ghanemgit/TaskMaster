@@ -7,6 +7,15 @@
     tools:context=".ui.RecyclerViewActivity">
 
 
+    <TextView
+        android:id="@+id/text_view_rec_test"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Hello"
+        android:textColor="@color/black"
+        tools:layout_editor_absoluteX="178dp"
+        tools:layout_editor_absoluteY="0dp"
+        tools:ignore="MissingConstraints" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_view"

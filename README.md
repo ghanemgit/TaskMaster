@@ -6,28 +6,22 @@
 
 
 
-## First Day
-#### In this day I learned how to initialize android application by Android studio and how to insert image to my app also I explore how to use onClick Listener and linked it with the related activity class and I learned how to style a lot of stuff in Android studio and make my application relative by use the relative linear features in Android studio, And the last thing i learned how to write code inside xml file.
-### This is some screenshot for my work today you can see it [here](ScreenShot/1stDay/FirstDay.md)
+# Day 5
 
+#### Today I learned how to make a full espresso test starting from how to initial the required dependencies to build.gradle file, then I wrote many tests type like, check the hint test, click on button test, recycle view test, adapter view test and so, I do this tests for add task activity, settings activity, recycler view activity and update activity.
 
-
-## Second Day
-
-#### Today I add many features to my application, lets start talk about it, first of all I created the setting page and let the user to save his/her name and I put it as overflow menu and I make the username rendered to home page also I added the task as button titled with task name by the way I enabled the user to save the task by shared preference class also I added the back button on the navigation bar and open the all tasks section and you will find the user task and you can click on it and see the details of that task.  
-### This is some screenshot for my work today you can see it [here](ScreenShot/2ndDay/SecondeDay.md)
-
-
-## Third Day
-
-#### Today I learned how to build Recycle view to display the content of tasks list and learn how to set the look of each object inside the list by creating custom list recycler view to show the tasks as a list and set what happen when you click on the each task, that's will direct you to task details page where you can see the description and state of the task.
 ### The changes included in this release
-- Refactor the home page to show the tasks list.
-- Move the all task button to over flow menu at the top right.
-- Add spinner to add task form represent the states of the task.
-- Now the task added by the user (Shared preference) is also added to the list shown in the home screen.
-- Add New Task button as a floating point at the home screen.
-### This is some screenshot for my work today you can see it [here](ScreenShot/3rdDay/ThirdDay.md)
+
+- Filter the tasks according to its states.
+- Now you can delete the task if you don't want it.
+- Adding some style in my application.
+- Now you can edit title, description and state of task.
+- Add espresso test to a lot of activity.
+
+### There is some screenshot for my work today you can see it [here](ScreenShot/5thDay/Day5.md)
+
+### Go to test directly from [here](app/src/androidTest/java/com/example/taskmaster/ui)
+### My code [here](app/src/main/java/com/example/taskmaster)
 
 
 ## Forth Day
@@ -38,7 +32,42 @@
 - Refactor the home page to show the tasks list from the database.
 - Modify the function of add task button in add task page to store the data in the database.
 
-### This is some screenshot for my work today you can see it [here](ScreenShot/4thDay/ForthDay.md)
+### There is some screenshot for my work today you can see it [here](ScreenShot/4thDay/ForthDay.md)
+
+## Third Day
+
+#### Today I learned how to build Recycle view to display the content of tasks list and learn how to set the look of each object inside the list by creating custom list recycler view to show the tasks as a list and set what happen when you click on the each task, that's will direct you to task details page where you can see the description and state of the task.
+### The changes included in this release
+- Refactor the home page to show the tasks list.
+- Move the all task button to over flow menu at the top right.
+- Add spinner to add task form represent the states of the task.
+- Now the task added by the user (Shared preference) is also added to the list shown in the home screen.
+- Add New Task button as a floating point at the home screen.
+### There is some screenshot for my work today you can see it [here](ScreenShot/3rdDay/ThirdDay.md)
+
+
+## Second Day
+
+#### Today I add many features to my application, lets start talk about it, first of all I created the setting page and let the user to save his/her name and I put it as overflow menu and I make the username rendered to home page also I added the task as button titled with task name by the way I enabled the user to save the task by shared preference class also I added the back button on the navigation bar and open the all tasks section and you will find the user task and you can click on it and see the details of that task.
+### There is some screenshot for my work today you can see it [here](ScreenShot/2ndDay/SecondeDay.md)
+
+
+
+## First Day
+#### In this day I learned how to initialize android application by Android studio and how to insert image to my app also I explore how to use onClick Listener and linked it with the related activity class and I learned how to style a lot of stuff in Android studio and make my application relative by use the relative linear features in Android studio, And the last thing i learned how to write code inside xml file.
+### There is some screenshot for my work today you can see it [here](ScreenShot/1stDay/FirstDay.md)
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
