@@ -1,11 +1,13 @@
 package com.example.taskmaster.ui;
 
+
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.taskmaster.R;
@@ -18,6 +20,7 @@ public class CustomListRecyclerViewAdapter extends RecyclerView.Adapter<CustomLi
 
     List<Task> dataList;
     CustomClickListener listener;
+
 
     public CustomListRecyclerViewAdapter(List<Task> dataList, CustomClickListener listener) {
         this.dataList = dataList;
@@ -41,7 +44,6 @@ public class CustomListRecyclerViewAdapter extends RecyclerView.Adapter<CustomLi
         holder.body.setText(dataList.get(position).getBody());
         holder.state.setText(dataList.get(position).getTaskState().getDisplayValue());
 
-
     }
 
     @Override
@@ -56,12 +58,16 @@ public class CustomListRecyclerViewAdapter extends RecyclerView.Adapter<CustomLi
         TextView state;
 
 
+
+
         public CustomViewHolder(@NonNull View itemView, CustomClickListener listener) {
             super(itemView);
 
             title = itemView.findViewById(R.id.title);
             body = itemView.findViewById(R.id.body);
             state = itemView.findViewById(R.id.state);
+
+
 
             itemView.setOnClickListener(view -> listener.onTaskClicked(getAdapterPosition()));
 

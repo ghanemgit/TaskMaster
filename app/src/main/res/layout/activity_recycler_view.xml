@@ -11,6 +11,7 @@
         android:id="@+id/text_view_rec_test"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:fontFamily="serif"
         android:text="Hello"
         android:textColor="@color/black"
         tools:layout_editor_absoluteX="178dp"
@@ -20,6 +21,7 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_view"
         android:background="@color/silver"
+        android:fontFamily="serif"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_constraintBottom_toBottomOf="parent"
