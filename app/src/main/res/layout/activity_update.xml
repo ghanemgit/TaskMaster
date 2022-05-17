@@ -12,6 +12,7 @@
         android:id="@+id/updateTaskTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:fontFamily="serif"
         android:layout_marginStart="25dp"
         android:layout_marginTop="50dp"
         android:text="@string/update_task_title"
@@ -23,6 +24,8 @@
         android:id="@+id/updateTaskTitleBox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:backgroundTint="#3BACB6"
+        android:fontFamily="serif"
         android:layout_below="@+id/updateTaskTitle"
         android:layout_alignParentStart="true"
         android:layout_marginStart="15dp"
@@ -35,6 +38,8 @@
         android:id="@+id/updateTaskDescriptionBox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:fontFamily="serif"
+        android:backgroundTint="#3BACB6"
         android:layout_below="@+id/updateTaskTitleBox"
         android:layout_alignParentStart="true"
         android:layout_marginStart="15dp"
@@ -48,11 +53,11 @@
         android:id="@+id/update_task_states_spinner"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:fontFamily="serif"
         android:layout_below="@+id/updateTaskDescriptionBox"
         android:layout_alignParentStart="true"
         android:layout_marginStart="15dp"
         android:layout_marginTop="50dp"
-
         />
 
 
@@ -62,6 +67,7 @@
         android:layout_height="47dp"
         android:layout_below="@+id/update_task_states_spinner"
         android:layout_centerHorizontal="true"
+        android:fontFamily="serif"
         android:layout_marginTop="25dp"
         android:backgroundTint="@color/teal_700"
         android:text="Save" />
@@ -70,6 +76,7 @@
         android:id="@+id/backToDescriptionPage"
         android:layout_width="110dp"
         android:layout_height="47dp"
+        android:fontFamily="serif"
         android:layout_below="@+id/updateTaskButton"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="15dp"

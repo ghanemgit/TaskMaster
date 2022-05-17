@@ -12,7 +12,7 @@ import androidx.room.Room;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
-import com.example.taskmaster.data.AppDatabase;
+import com.example.taskmaster.data.TaskDatabase;
 import com.example.taskmaster.data.Task;
 import com.example.taskmaster.data.TaskDao;
 import com.example.taskmaster.data.TaskState;
@@ -26,15 +26,15 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RunWith(AndroidJUnit4.class)
-public class AppDatabaseTest {
+public class TaskDatabaseTest {
 
     private TaskDao taskDao;
-    private AppDatabase db;
+    private TaskDatabase db;
 
     @Before
     public void createDb() {
         Context context = ApplicationProvider.getApplicationContext();
-        db = Room.inMemoryDatabaseBuilder(context, AppDatabase.class).build();
+        db = Room.inMemoryDatabaseBuilder(context, TaskDatabase.class).build();
         taskDao = db.taskDao();
     }
 

@@ -12,6 +12,7 @@
     <TextView
         android:id="@+id/task_body_in_details_page"
         android:layout_width="match_parent"
+        android:fontFamily="serif"
         android:layout_height="wrap_content"
         android:textColor="@color/black"
         android:layout_marginStart="10dp"
@@ -25,6 +26,7 @@
 
         android:id="@+id/task_state_in_details_page"
         android:layout_width="match_parent"
+        android:fontFamily="serif"
         android:layout_height="wrap_content"
         android:layout_marginTop="50dp"
         android:layout_marginStart="10dp"
@@ -37,6 +39,7 @@
     <Button
         android:id="@+id/delete_button"
         android:layout_width="110dp"
+        android:fontFamily="serif"
         android:layout_height="47dp"
         android:layout_marginStart="40dp"
         android:text="@string/delete_button"
@@ -49,6 +52,7 @@
     <Button
         android:id="@+id/edit_button"
         android:layout_width="110dp"
+        android:fontFamily="serif"
         android:layout_height="47dp"
         android:layout_marginEnd="60dp"
         android:text="@string/edit_button"

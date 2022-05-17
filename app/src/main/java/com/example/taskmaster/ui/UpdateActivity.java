@@ -11,7 +11,7 @@ import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.example.taskmaster.R;
-import com.example.taskmaster.data.AppDatabase;
+import com.example.taskmaster.data.TaskDatabase;
 import com.example.taskmaster.data.Task;
 import com.example.taskmaster.data.TaskState;
 
@@ -28,7 +28,7 @@ public class UpdateActivity extends AppCompatActivity {
         setContentView(R.layout.activity_update);
 
 
-        newTask = AppDatabase.getInstance(getApplicationContext()).taskDao().getTaskById(getIntent().getLongExtra("Position", 1));
+        newTask = TaskDatabase.getInstance(getApplicationContext()).taskDao().getTaskById(getIntent().getLongExtra("Position", 1));
 
         Button saveButton = findViewById(R.id.updateTaskButton);
         Button backButton = findViewById(R.id.backToDescriptionPage);
@@ -68,7 +68,7 @@ public class UpdateActivity extends AppCompatActivity {
         newTask.setBody(taskDescription.getText().toString());
         newTask.setTaskState(taskState);
 
-        AppDatabase.getInstance(getApplicationContext()).taskDao().update(newTask);
+        TaskDatabase.getInstance(getApplicationContext()).taskDao().update(newTask);
 
     }
 
@@ -131,5 +131,6 @@ public class UpdateActivity extends AppCompatActivity {
         intent.putExtra("Body", newTask.getBody());
         intent.putExtra("Position", newTask.getId());
         startActivity(intent);
+        finish();
     }
 }

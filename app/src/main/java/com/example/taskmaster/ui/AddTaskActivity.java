@@ -2,6 +2,7 @@ package com.example.taskmaster.ui;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -15,11 +16,14 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.amplifyframework.api.graphql.model.ModelMutation;
+import com.amplifyframework.core.Amplify;
 import com.example.taskmaster.R;
-import com.example.taskmaster.data.AppDatabase;
-import com.example.taskmaster.data.Task;
+import com.example.taskmaster.data.TaskDatabase;
+import com.amplifyframework.datastore.generated.model.Task;
 import com.example.taskmaster.data.TaskState;
 
 import java.util.Objects;
@@ -34,6 +38,7 @@ public class AddTaskActivity extends AppCompatActivity {
     private EditText taskTitle;
     private EditText taskDescription;
     private Spinner taskState;
+    private TextView totalTask;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,6 +49,7 @@ public class AddTaskActivity extends AppCompatActivity {
         taskTitle = (EditText) findViewById(R.id.taskTitleBox);
         taskDescription = findViewById(R.id.taskDescriptionBox);
         taskState = findViewById(R.id.task_states_spinner);
+        totalTask = findViewById(R.id.tasksCount);
 
         /*
         https://www.youtube.com/watch?v=FcPUFp8Qrps&ab_channel=LemubitAcademy
@@ -53,8 +59,9 @@ public class AddTaskActivity extends AppCompatActivity {
 
         setAdapterToStatesTaskArraySpinner();
 
+        totalTask.setText("Total Task => "+ TaskDatabase.getInstance(this).taskDao().getAll().size());
+
         addTaskButton.setOnClickListener(view -> {
-            Intent intent = new Intent(this, MainActivity.class);
             if (TextUtils.isEmpty(taskTitle.getText()) || TextUtils.isEmpty(taskDescription.getText())) {
 
                 taskTitle.setError("Title is Required");
@@ -62,7 +69,7 @@ public class AddTaskActivity extends AppCompatActivity {
             } else {
                 Toast.makeText(this, "Submitted!", Toast.LENGTH_SHORT).show();
                 saveTask();
-                startActivity(intent);
+                navigateToHomePage();
             }
 
             View view2 = this.getCurrentFocus();
@@ -74,26 +81,27 @@ public class AddTaskActivity extends AppCompatActivity {
 
     }
 
+    @SuppressLint("ResourceAsColor")
     public void saveTask() {
 
         String taskTitleString = taskTitle.getText().toString();
         String taskDescriptionString = taskDescription.getText().toString();
         String taskStateString = taskState.getSelectedItem().toString();
 
-        Log.i(TAG, "saveTask: TaskStateString is =>  " + taskStateString);
-
-        SharedPreferences addTaskPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        SharedPreferences.Editor editor = addTaskPreferences.edit();
-
-        editor.putString(TASK_TITLE, taskTitleString);
-        editor.apply();
-        editor.putString(TASK_DESCRIPTION, taskDescriptionString);
-        editor.apply();
-        editor.putString(TASK_STATE, taskStateString);
-        editor.apply();
-
-        Log.i(TAG, "saveTask: The title is " + taskTitleString);
-        Log.i(TAG, "saveTask: The Description is " + taskDescriptionString);
+//        Log.i(TAG, "saveTask: TaskStateString is =>  " + taskStateString);
+//
+//        SharedPreferences addTaskPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+//        SharedPreferences.Editor editor = addTaskPreferences.edit();
+//
+//        editor.putString(TASK_TITLE, taskTitleString);
+//        editor.apply();
+//        editor.putString(TASK_DESCRIPTION, taskDescriptionString);
+//        editor.apply();
+//        editor.putString(TASK_STATE, taskStateString);
+//        editor.apply();
+//
+//        Log.i(TAG, "saveTask: The title is " + taskTitleString);
+//        Log.i(TAG, "saveTask: The Description is " + taskDescriptionString);
 
         TaskState taskState;
         switch (taskStateString) {
@@ -110,8 +118,43 @@ public class AddTaskActivity extends AppCompatActivity {
                 taskState = TaskState.New;
         }
 
-        Task newTask = new Task(taskTitleString, taskDescriptionString, taskState);
-        AppDatabase.getInstance(getApplicationContext()).taskDao().insertTask(newTask);
+        // Lab 32 \\
+         Task task = Task.builder()
+                .title(taskTitleString)
+                .description(taskDescriptionString)
+                .status(taskStateString)
+                .build();
+
+        // Data store save
+        Amplify.DataStore.save(task,
+                success -> Log.i(TAG, "Saved item: " + success.item().getTitle()),
+                error -> Log.e(TAG, "Could not save item to DataStore ", error)
+        );
+
+        // API save to backend
+        Amplify.API.mutate(
+                ModelMutation.create(task),
+                success -> Log.i(TAG, "Saved item: " + success.getData().getTitle()),
+                error -> Log.e(TAG, "Could not save item to API ", error)
+        );
+
+        // Datastore and API sync
+        Amplify.DataStore.observe(Task.class,
+                started -> {
+                    Log.i(TAG, "Observation began. ");
+                    // TODO: 5/17/22 Update the UI thread with in this call method
+                    // Manipulate your views
+
+                    // call handler
+                },
+                change -> Log.i(TAG, change.item().toString()),
+                failure -> Log.e(TAG, "Observation failed. ", failure),
+                () -> Log.i(TAG, "Observation complete. ")
+        );
+
+
+//        Task newTask = new Task(taskTitleString, taskDescriptionString, taskState);
+//        TaskDatabase.getInstance(getApplicationContext()).taskDao().insertTask(newTask);
     }
 
 
@@ -129,5 +172,10 @@ public class AddTaskActivity extends AppCompatActivity {
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         // Apply the adapter to the spinner
         spinner.setAdapter(adapter);
+    }
+    public void navigateToHomePage(){
+        Intent intent = new Intent(this, MainActivity.class);
+        startActivity(intent);
+        finish();
     }
 }
