@@ -4,7 +4,12 @@
 
 #### As ASAC required from us we will start building application responsible to distributing, management, creating and editing the tasks for user, so we start this build after midterm project and we will use Android studio to help us build this application.
 
-
+# Day 6
+#### Today I learned how to get started create amazon web service account and I started with initialize amplify project by follow the official documentation also at my project level I replace the store the data in data base to store it in the amazon cloud in dynamoDB and I learned how to initialize amplify project and push it to the cloud.
+#### Here is some important directories to my project
+- The whole local project [here](app/src/main/java/com/example/taskmaster)
+- The new amplifyFrameWork directory [here](app/src/main/java/com/amplifyframework/datastore/generated/model)
+- The schema.graphql [here](amplify/backend/api/amplifyDatasource/schema.graphql)
 
 # Day 5
 
