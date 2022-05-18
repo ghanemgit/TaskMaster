@@ -13,11 +13,19 @@ query GetTask($id: ID!) {
   }
 }
 query ListTasks(
+  $id: ID
   $filter: ModelTaskFilterInput
   $limit: Int
   $nextToken: String
+  $sortDirection: ModelSortDirection
 ) {
-  listTasks(filter: $filter, limit: $limit, nextToken: $nextToken) {
+  listTasks(
+    id: $id
+    filter: $filter
+    limit: $limit
+    nextToken: $nextToken
+    sortDirection: $sortDirection
+  ) {
     items {
       id
       title

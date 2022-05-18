@@ -19,8 +19,11 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.amplifyframework.AmplifyException;
+import com.amplifyframework.api.aws.AWSApiPlugin;
 import com.amplifyframework.api.graphql.model.ModelMutation;
 import com.amplifyframework.core.Amplify;
+import com.amplifyframework.datastore.AWSDataStorePlugin;
 import com.example.taskmaster.R;
 import com.example.taskmaster.data.TaskDatabase;
 import com.amplifyframework.datastore.generated.model.Task;
@@ -50,6 +53,9 @@ public class AddTaskActivity extends AppCompatActivity {
         taskDescription = findViewById(R.id.taskDescriptionBox);
         taskState = findViewById(R.id.task_states_spinner);
         totalTask = findViewById(R.id.tasksCount);
+
+        configureAmplify();
+
 
         /*
         https://www.youtube.com/watch?v=FcPUFp8Qrps&ab_channel=LemubitAcademy
@@ -102,21 +108,21 @@ public class AddTaskActivity extends AppCompatActivity {
 //
 //        Log.i(TAG, "saveTask: The title is " + taskTitleString);
 //        Log.i(TAG, "saveTask: The Description is " + taskDescriptionString);
-
-        TaskState taskState;
-        switch (taskStateString) {
-            case "Assigned":
-                taskState = TaskState.Assigned;
-                break;
-            case "In progress":
-                taskState = TaskState.In_progress;
-                break;
-            case "Completed":
-                taskState = TaskState.Completed;
-                break;
-            default:
-                taskState = TaskState.New;
-        }
+//
+//        TaskState taskState;
+//        switch (taskStateString) {
+//            case "Assigned":
+//                taskState = TaskState.Assigned;
+//                break;
+//            case "In progress":
+//                taskState = TaskState.In_progress;
+//                break;
+//            case "Completed":
+//                taskState = TaskState.Completed;
+//                break;
+//            default:
+//                taskState = TaskState.New;
+//        }
 
         // Lab 32 \\
          Task task = Task.builder()
@@ -130,6 +136,7 @@ public class AddTaskActivity extends AppCompatActivity {
                 success -> Log.i(TAG, "Saved item: " + success.item().getTitle()),
                 error -> Log.e(TAG, "Could not save item to DataStore ", error)
         );
+
 
         // API save to backend
         Amplify.API.mutate(
@@ -177,5 +184,17 @@ public class AddTaskActivity extends AppCompatActivity {
         Intent intent = new Intent(this, MainActivity.class);
         startActivity(intent);
         finish();
+    }
+
+    public void configureAmplify(){
+        try {
+            Amplify.addPlugin(new AWSDataStorePlugin());
+            Amplify.addPlugin(new AWSApiPlugin());
+            Amplify.configure(getApplicationContext());
+
+            Log.i("MyAmplifyApp", "Initialized Amplify");
+        } catch (AmplifyException error) {
+            Log.e("MyAmplifyApp", "Could not initialize Amplify", error);
+        }
     }
 }

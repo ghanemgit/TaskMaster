@@ -11,6 +11,9 @@
 - The new amplifyFrameWork directory [here](app/src/main/java/com/amplifyframework/datastore/generated/model)
 - The schema.graphql [here](amplify/backend/api/amplifyDatasource/schema.graphql)
 
+### There is some screenshot for to proof my work today you can see it [here](ScreenShot/6thDay/ReturnedItemAwsTable.jpg)
+
+
 # Day 5
 
 #### Today I learned how to make a full espresso test starting from how to initial the required dependencies to build.gradle file, then I wrote many tests type like, check the hint test, click on button test, recycle view test, adapter view test and so, I do this tests for add task activity, settings activity, recycler view activity and update activity.
