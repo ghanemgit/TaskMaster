@@ -8,14 +8,22 @@ import android.content.Intent;
 import android.os.Bundle;
 
 import com.example.taskmaster.R;
-import com.example.taskmaster.data.Task;
+import com.amplifyframework.datastore.generated.model.Task;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class RecyclerViewActivity extends AppCompatActivity {
 
-    List<Task> taskList = new ArrayList<>();
+    List<Task> taskList;
+
+    public RecyclerViewActivity(List<Task> taskList){
+        this.taskList = taskList;
+    }
+    public RecyclerViewActivity(){
+
+    }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,7 +35,6 @@ public class RecyclerViewActivity extends AppCompatActivity {
 
         CustomListRecyclerViewAdapter customListRecyclerViewAdapter = new CustomListRecyclerViewAdapter(taskList
                 , position -> navigateToTaskDetailsPage());
-
 
         recyclerView.setAdapter(customListRecyclerViewAdapter);
 

@@ -4,6 +4,23 @@
 
 #### As ASAC required from us we will start building application responsible to distributing, management, creating and editing the tasks for user, so we start this build after midterm project and we will use Android studio to help us build this application.
 
+
+# Day 7
+#### Today I learned how to make different relations between the database tables, so in this project I used the one to many relationship, in addition I learned how to query the data from cloud api and and how to filter the result from the api, also I learned how to make splash screen, and the most important thing I learned today is how to connect the results from the query with the recycler view, the last thing I learned today is how to show the tasks that related with the user team only.
+### The workflow for my app now is
+#### 1- When the user open the app a splash screen activity will launch(This will take 2 sec).
+#### 2- During this check process will done to check if the user set his/her team in the setting.
+- If yes the main activity will start.
+- If no the setting page will appear and request from the user to enter username and the team.
+#### 3- Before the setting page launch the process of query for all teams will happen to allow user choose his/her team.
+#### 4- Before the main activity launch the process of query of all tasks related to the user team will done to show all the tasks.
+### There is some screenshot for to proof my work today you can see it [here](ScreenShot/7thDay/Day7.md)
+
+
+
+
+
+
 # Day 6
 #### Today I learned how to get started create amazon web service account and I started with initialize amplify project by follow the official documentation also at my project level I replace the store the data in data base to store it in the amazon cloud in dynamoDB and I learned how to initialize amplify project and push it to the cloud.
 #### Here is some important directories to my project
