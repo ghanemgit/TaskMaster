@@ -7,6 +7,12 @@ type Task @model {
   status: String
 }
 type Note @model {
-  id: ID!
+  id: ID! @primaryKey
   content: String!
+}
+type Team @model {
+
+  id: ID! @primaryKey
+  name: String!
+  tasks: [Task] @hasMany
 }

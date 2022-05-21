@@ -1,18 +1,12 @@
 package com.example.taskmaster.ui;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.view.MenuCompat;
-
-import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Typeface;
-import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.preference.PreferenceManager;
-import android.renderscript.RenderScript;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -25,29 +19,27 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.amazonaws.auth.AWSCognitoIdentityProvider;
-import com.amplifyframework.AmplifyException;
-import com.amplifyframework.api.aws.AWSApiPlugin;
-import com.amplifyframework.api.graphql.model.ModelMutation;
-import com.amplifyframework.api.graphql.model.ModelQuery;
-import com.amplifyframework.core.Amplify;
-import com.amplifyframework.datastore.AWSDataStorePlugin;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.MenuCompat;
+
+import com.amplifyframework.datastore.generated.model.Task;
 import com.example.taskmaster.R;
-import com.example.taskmaster.data.TaskDatabase;
-import com.example.taskmaster.data.Task;
-import com.example.taskmaster.data.TaskState;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = MainActivity.class.getSimpleName();
     private TextView usernameWelcoming;
-    private List<Task> taskList;
+    private FloatingActionButton floatAddTaskButton;
+    private List<Task> tasksList = new ArrayList<>();
     private String selectedItem = "";
+    private Handler handler;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,52 +47,23 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Log.i(TAG, "onCreate: called");
 
-
-
-        usernameWelcoming = findViewById(R.id.username_welcoming);
-        /*
-        https://developer.android.com/guide/topics/ui/floating-action-button
-         */
-        FloatingActionButton floatAddTaskButton = findViewById(R.id.add_task_button_floating);
+        findById();
 
         //Floating add task button in main activity
         floatAddTaskButton.setOnClickListener(view -> navigateToAddTaskPage());
 
+        RecyclerViewHandler();
+
         //set adapter for filter tasks spinner
         setAdapterToStatesTaskArraySpinner();
 
-        //render the tasks to home page
-        getTasksListToHomePage();
-
-        /*
-         * https://stackoverflow.com/questions/12108893/set-onclicklistener-for-spinner-item
-         * And as mr.Json tell us in the lecture
-         * This spinner is responsible to filter the task for user by states
-         */
-        Spinner sortSpinner = findViewById(R.id.task_states_filter_spinner);
-        sortSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                selectedItem = adapterView.getItemAtPosition(i).toString();
-                initialiseData();
-                /*
-                 * https://stackoverflow.com/questions/3053761/reload-activity-in-android
-                 * how to refresh the activity
-                 */
-                onResume();
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
-            }
-        });
-
+        taskFilterSpinner();
     }
-
 
     @Override
     protected void onStart() {
         super.onStart();
+        onResume();
         Log.i(TAG, "onStart: called");
     }
 
@@ -113,17 +76,13 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onResume() {
-        setUsername();
+        showSharedPreferencesInfo();
+        //render the tasks to home page
         getTasksListToHomePage();
         super.onResume();
         Log.i(TAG, "onResume: called");
     }
 
-    @Override
-    protected void onPause() {
-        super.onPause();
-        Log.i(TAG, "onPause: called");
-    }
 
     @Override
     protected void onStop() {
@@ -131,11 +90,6 @@ public class MainActivity extends AppCompatActivity {
         Log.i(TAG, "onStop: called");
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        Log.i(TAG, "onDestroy: called");
-    }
 
     //Set what happens when click on item from the overflow menu
     @Override
@@ -162,42 +116,40 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
-    public void navigateToAddTaskPage() {
+    private void navigateToAddTaskPage() {
         Intent intent = new Intent(MainActivity.this, AddTaskActivity.class);
         startActivity(intent);
 
     }
 
-    public void navigateToAllTaskPage() {
+    private void navigateToAllTaskPage() {
         Intent intent = new Intent(MainActivity.this, AllTasksActivity.class);
         startActivity(intent);
     }
 
-    public void navigateToSetting() {
+    private void navigateToSetting() {
         Intent intent = new Intent(this, SettingActivity.class);
         startActivity(intent);
     }
 
     //Set up the username details to show it in the home screen
-    public void setUsername() {
+    private void showSharedPreferencesInfo() {
 
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
-        usernameWelcoming.setText(sharedPreferences.getString(SettingActivity.USERNAME, "Welcome Guest"));
+        usernameWelcoming.setText(sharedPreferences.getString(SettingActivity.USER_TEAM, SettingActivity.USERNAME));
 
-        Log.i(TAG, "setUsername: username is => " + SettingActivity.USERNAME);
     }
 
+    private void initializeData() {
 
-    private void initialiseData() {
-
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        String noOfTaskToShow = sharedPreferences.getString(SettingActivity.NO_OF_TASK_TO_SHOW, "");
-        int num = 0;
-        if (!Objects.equals(noOfTaskToShow, "")) {
-            num = Integer.parseInt(noOfTaskToShow);
-        }
-        Log.i(TAG, "initialiseData: The value of num is = " + num);
+//        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+//        String noOfTaskToShow = sharedPreferences.getString(SettingActivity.NO_OF_TASK_TO_SHOW, "");
+//        int num = 0;
+//        if (!Objects.equals(noOfTaskToShow, "")) {
+//            num = Integer.parseInt(noOfTaskToShow);
+//        }
+//        Log.i(TAG, "initialiseData: The value of num is = " + num);
 
 
         /*
@@ -210,50 +162,31 @@ public class MainActivity extends AppCompatActivity {
 //                " when we will use it and start clean the place where we will work", TaskState.Assigned));
 //        TaskDatabase.getInstance(this).taskDao().insertTask(new Task("Bring Helper Tools", "Go and bring all the necessary helper tools" +
 //                " like Wooden spoon ,Measuring cup ,Mixing bowl and spatula etc..", TaskState.Completed));
+//
+        tasksList = SplashActivity.tasksList;
+        //fetchDataFromLocal();
 
-        /*
-         * This switch to help user to show specific tasks according to states of tasks
-         * This used the lambda form as we learned to filter the tasks from the database
-         */
-        switch (selectedItem) {
-            case "New":
-            case "Assigned":
-            case "In progress":
-            case "Completed":
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    taskList = TaskDatabase.getInstance(this).taskDao().getAll().stream().filter(
-                            task -> task.getTaskState().getDisplayValue().equals(selectedItem)).collect(Collectors.toList());
-                }
-                break;
-            default:
-                taskList = TaskDatabase.getInstance(this).taskDao().getAll();
-        }
+
     }
-
 
     private void getTasksListToHomePage() {
 
-        initialiseData();
+        initializeData();
 
-        ListView tasksList = findViewById(R.id.list_tasks_main);
+        ListView listViewTasksList = findViewById(R.id.list_tasks_main);
 
         ArrayAdapter<Task> taskDataArrayAdapter = new ArrayAdapter<Task>(
                 this
                 , android.R.layout.simple_list_item_2
                 , android.R.id.text2
-                , taskList) {
-            @SuppressLint("ResourceAsColor")
+                , tasksList) {
             @NonNull
             @Override
             public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
                 View view = super.getView(position, convertView, parent);
 
-
                 TextView title = view.findViewById(android.R.id.text1);
                 TextView state = view.findViewById(android.R.id.text2);
-
-
-
 
                 /*
                  * How to set the text style from java side
@@ -261,28 +194,54 @@ public class MainActivity extends AppCompatActivity {
                  */
                 title.setTypeface(null, Typeface.BOLD);
 
-
-                title.setText(taskList.get(position).getTitle());
-
-
-
-                state.setText(taskList.get(position).getTaskState().getDisplayValue());
-
-
-
-
+                title.setText(tasksList.get(position).getTitle());
+                state.setText(tasksList.get(position).getStatus());
                 return view;
             }
         };
-        tasksList.setAdapter(taskDataArrayAdapter);
+        listViewTasksList.setAdapter(taskDataArrayAdapter);
 
-        tasksList.setOnItemClickListener((adapterView, view, i, l) -> {
+        listViewTasksList.setOnItemClickListener((adapterView, view, i, l) -> {
             Intent intent = new Intent(getApplicationContext(), TaskDetailsActivity.class);
-            intent.putExtra("Position", taskList.get(i).getId());
+            intent.putExtra("Position", tasksList.get(i).getId());
             startActivity(intent);
         });
     }
 
+    private void RecyclerViewHandler() {
+        System.out.println("The final size of list is from recycler view =>" + tasksList.size());
+
+        handler = new Handler(Looper.getMainLooper(), msg -> {
+
+            new RecyclerViewActivity(tasksList);
+
+            return true;
+
+        });
+    }
+
+    private void fetchDataFromLocal() {
+        /*
+         * This switch to help user to show specific tasks according to states of tasks
+         * This used the lambda form as we learned to filter the tasks from the database
+         */
+//        switch (selectedItem) {
+//            case "Completed":
+//            case "New":
+//            case "Assigned":
+//            case "In progress":
+//
+//                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+//                    taskList = TaskDatabase.getInstance(this).taskDao().getAll().stream().filter(
+//                            task -> task.getTaskState().getDisplayValue().equals(selectedItem)).collect(Collectors.toList());
+//
+//                }
+//                break;
+//            default:
+//                taskList = TaskDatabase.getInstance(this).taskDao().getAll();
+//        }
+
+    }
 
     private void setAdapterToStatesTaskArraySpinner() {
 
@@ -299,5 +258,39 @@ public class MainActivity extends AppCompatActivity {
         spinner.setAdapter(adapter);
     }
 
+    private void taskFilterSpinner() {
+
+        /*
+         * https://stackoverflow.com/questions/12108893/set-onclicklistener-for-spinner-item
+         * And as mr.Json tell us in the lecture
+         * This spinner is responsible to filter the task for user by states
+         */
+        Spinner sortSpinner = findViewById(R.id.task_states_filter_spinner);
+        sortSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                selectedItem = adapterView.getItemAtPosition(i).toString();
+                initializeData();
+                /*
+                 * https://stackoverflow.com/questions/3053761/reload-activity-in-android
+                 * how to refresh the activity
+                 */
+                onResume();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+            }
+        });
+
+    }
+
+    private void findById() {
+        usernameWelcoming = findViewById(R.id.username_welcoming);
+        /*
+        https://developer.android.com/guide/topics/ui/floating-action-button
+         */
+        floatAddTaskButton = findViewById(R.id.add_task_button_floating);
+    }
 
 }

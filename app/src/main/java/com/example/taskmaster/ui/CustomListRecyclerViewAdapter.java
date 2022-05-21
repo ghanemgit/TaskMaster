@@ -11,7 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.taskmaster.R;
-import com.example.taskmaster.data.Task;
+import com.amplifyframework.datastore.generated.model.Task;
 
 import java.util.List;
 
@@ -41,8 +41,10 @@ public class CustomListRecyclerViewAdapter extends RecyclerView.Adapter<CustomLi
     public void onBindViewHolder(@NonNull CustomViewHolder holder, int position) {
 
         holder.title.setText(dataList.get(position).getTitle());
-        holder.body.setText(dataList.get(position).getBody());
-        holder.state.setText(dataList.get(position).getTaskState().getDisplayValue());
+        holder.body.setText(dataList.get(position).getDescription());
+        holder.state.setText(dataList.get(position).getStatus());
+
+
 
     }
 

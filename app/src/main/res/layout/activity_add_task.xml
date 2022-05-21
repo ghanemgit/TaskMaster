@@ -33,7 +33,7 @@
         android:layout_marginStart="15dp"
         android:textColorHint="#3BACB6"
         android:layout_marginEnd="15dp"
-        android:layout_marginTop="50dp"
+        android:layout_marginTop="40dp"
         android:textColorHighlight="@color/teal_200"
         android:autofillHints=""
         android:hint="@string/task_title"
@@ -51,7 +51,7 @@
         android:layout_marginStart="15dp"
         android:textColorHint="#3BACB6"
         android:textColorHighlight="@color/teal_200"
-        android:layout_marginTop="50dp"
+        android:layout_marginTop="40dp"
         android:autofillHints=""
         android:hint="@string/task_description"
         android:inputType="textMultiLine" />
@@ -61,26 +61,34 @@
         android:id="@+id/task_states_spinner"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:fontFamily="serif"
         android:layout_below="@+id/taskDescriptionBox"
         android:layout_alignParentStart="true"
         android:layout_marginStart="15dp"
-        android:layout_marginTop="50dp"
-        />
+        android:layout_marginTop="40dp"
+        android:fontFamily="serif" />
 
+
+    <Spinner
+        android:id="@+id/task_team_spinner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/task_states_spinner"
+        android:layout_marginStart="12dp"
+        android:layout_marginTop="40dp"
+        android:fontFamily="serif" />
 
     <Button
         android:id="@+id/createTaskButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:drawableLeft="@drawable/add_task_icon"
-        android:layout_below="@+id/task_states_spinner"
-        android:fontFamily="serif"
+        android:layout_below="@+id/task_team_spinner"
+        android:layout_marginTop="40dp"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="50dp"
         android:backgroundTint="#3BACB6"
-        android:textColor="@color/black"
-        android:text="@string/addTaskB" />
+        android:drawableLeft="@drawable/add_task_icon"
+        android:fontFamily="serif"
+        android:text="@string/addTaskB"
+        android:textColor="@color/black" />
 
     <TextView
         android:id="@+id/tasksCount"
