@@ -1,54 +1,64 @@
 package com.example.taskmaster.ui;
 
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.amplifyframework.api.graphql.model.ModelMutation;
+import com.amplifyframework.core.Amplify;
+import com.amplifyframework.core.model.query.Where;
+import com.amplifyframework.datastore.generated.model.Task;
 import com.example.taskmaster.R;
-import com.example.taskmaster.data.TaskDatabase;
-import com.example.taskmaster.data.Task;
+
 
 import java.util.Objects;
-
+import java.util.stream.Collectors;
+@RequiresApi(api = Build.VERSION_CODES.N)
 public class TaskDetailsActivity extends AppCompatActivity {
 
     private static final String TAG = TaskDetailsActivity.class.getSimpleName();
-    private Task task;
+    private Task currentTask = null;
+    private String teamName = "";
+    private TextView state;
+    private TextView body;
+    private TextView team;
+    private Button deleteButton;
+    private Button editButton;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_task_details);
 
+        findAllViewById();
 
-        TextView state = findViewById(R.id.task_state_in_details_page);
-        TextView body = findViewById(R.id.task_body_in_details_page);
+        loadTaskInfo();
 
-        Task currentTask = TaskDatabase.getInstance(this).taskDao().getTaskById(getIntent().getLongExtra("Position", 1));
+        setTextForTaskView();
 
-        state.setText("State => " + currentTask.getTaskState().getDisplayValue());
-        body.setText("Description:\n" + currentTask.getBody());
-        setActionBarTitle(currentTask.getTitle());
+        deleteButton.setOnClickListener(view -> deleteTaskButtonAction());
 
-        Button deleteButton = findViewById(R.id.delete_button);
-        Button editButton = findViewById(R.id.edit_button);
-
-        deleteButton.setOnClickListener(view -> {
-            deleteTaskFromDatabaseById();
-        });
-
-        editButton.setOnClickListener(view -> {
-            editTask();
-        });
+        editButton.setOnClickListener(view -> editTask());
 
 
+    }
 
+    public void setActionBarTitleButton(String title) {
 
+       /*
+       https://stackoverflow.com/questions/10138007/how-to-change-android-activity-label
+       */
+
+        Objects.requireNonNull(getSupportActionBar()).setTitle(title);
 
         /*
         https://www.youtube.com/watch?v=FcPUFp8Qrps&ab_channel=LemubitAcademy
@@ -58,19 +68,37 @@ public class TaskDetailsActivity extends AppCompatActivity {
 
     }
 
+    private void findAllViewById() {
+        state = findViewById(R.id.task_state_in_details_page);
+        body = findViewById(R.id.task_body_in_details_page);
+        team = findViewById(R.id.task_team_in_details_page);
+        deleteButton = findViewById(R.id.delete_button);
+        editButton = findViewById(R.id.edit_button);
+    }
 
-    public void setActionBarTitle(String title) {
+    private void loadTaskInfo() {
 
-       /*
-       https://stackoverflow.com/questions/10138007/how-to-change-android-activity-label
-       */
 
-        Objects.requireNonNull(getSupportActionBar()).setTitle(title);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            currentTask = SplashActivity.tasksList.stream().filter(task1 -> task1.getId().equals(getIntent().getStringExtra("Position"))).collect(Collectors.toList()).get(0);
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            Task finalCurrentTask = currentTask;
+            teamName = SplashActivity.teamsList.stream().filter(team1 -> team1.getId().equals(finalCurrentTask.getTeamTasksId())).collect(Collectors.toList()).get(0).getName();
+        }
+    }
 
+    private void setTextForTaskView() {
+
+        state.setText("State => " + currentTask.getStatus());
+        body.setText("Description:\n" + currentTask.getDescription());
+        team.setText("This task for => " + teamName);
+        setActionBarTitleButton(currentTask.getTitle());
 
     }
 
-    public void deleteTaskFromDatabaseById() {
+
+    public void deleteTaskButtonAction() {
 
         AlertDialog.Builder deleteAlert = new AlertDialog.Builder(TaskDetailsActivity.this);
         deleteAlert.setTitle("Warning!");
@@ -81,8 +109,7 @@ public class TaskDetailsActivity extends AppCompatActivity {
         */
         deleteAlert.setPositiveButton("Yes", (dialogInterface, i) -> {
             Intent intent = new Intent(TaskDetailsActivity.this, MainActivity.class);
-            task = TaskDatabase.getInstance(getApplicationContext()).taskDao().getTaskById(getIntent().getLongExtra("Position", 0));
-            TaskDatabase.getInstance(getApplicationContext()).taskDao().deleteTask(task);
+            deleteTaskFromLocalAndApi();
             Toast.makeText(TaskDetailsActivity.this, "Task deleted", Toast.LENGTH_SHORT).show();
             startActivity(intent);
         });
@@ -91,12 +118,36 @@ public class TaskDetailsActivity extends AppCompatActivity {
         deleteAlert.show();
     }
 
+    private void deleteTaskFromLocalAndApi() {
+
+        Amplify.API.mutate(ModelMutation.delete(currentTask),
+                response -> Log.i("MyAmplifyApp", "Todo with id: "),
+                error -> Log.e("MyAmplifyApp", "Create failed", error)
+        );
+
+        Amplify.DataStore.query(Task.class, Where.id(currentTask.getId()),
+                matches -> {
+                    if (matches.hasNext()) {
+                        Task task = matches.next();
+                        Amplify.DataStore.delete(task,
+                                deleted -> Log.i("MyAmplifyApp", "Deleted a task."),
+                                failure -> Log.e("MyAmplifyApp", "Delete failed.", failure)
+                        );
+                    }
+                },
+                failure -> Log.e("MyAmplifyApp", "Query failed.", failure)
+        );
+
+    }
+
+
     public void editTask() {
 
-        task = TaskDatabase.getInstance(getApplicationContext()).taskDao().getTaskById(getIntent().getLongExtra("Position", 0));
+
         Intent intent = new Intent(TaskDetailsActivity.this, UpdateActivity.class);
-        intent.putExtra("Position", task.getId());
+        intent.putExtra("Id", currentTask.getId());
         startActivity(intent);
+
 
     }
 }

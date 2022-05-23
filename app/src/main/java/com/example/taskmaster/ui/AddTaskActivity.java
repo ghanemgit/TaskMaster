@@ -1,9 +1,9 @@
 package com.example.taskmaster.ui;
 
-import androidx.appcompat.app.AppCompatActivity;
-
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -19,15 +19,15 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.amplifyframework.AmplifyException;
-import com.amplifyframework.api.aws.AWSApiPlugin;
+import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.amplifyframework.api.graphql.model.ModelMutation;
 import com.amplifyframework.core.Amplify;
-import com.amplifyframework.datastore.AWSDataStorePlugin;
+import com.amplifyframework.datastore.generated.model.Task;
 import com.amplifyframework.datastore.generated.model.Team;
 import com.example.taskmaster.R;
 import com.example.taskmaster.data.TaskDatabase;
-import com.amplifyframework.datastore.generated.model.Task;
 import com.example.taskmaster.data.TeamDatabase;
 
 import java.util.ArrayList;
@@ -35,20 +35,20 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+@RequiresApi(api = Build.VERSION_CODES.N)
+@SuppressLint("SetTextI18n")
 public class AddTaskActivity extends AppCompatActivity {
 
-    public static final String TASK_TITLE = "Task Title";
-    public static final String TASK_DESCRIPTION = "Task Description";
-    public static final String TASK_STATE = "Task State";
+//    public static final String TASK_TITLE = "Task Title";
+ //   public static final String TASK_DESCRIPTION = "Task Description";
+//    public static final String TASK_STATE = "Task State";
     public static final String TEAM_ID = "teamId";
-    public static final String DATA = "Data";
     private Handler handler;
 
     private static final String TAG = AddTaskActivity.class.getSimpleName();
     private EditText taskTitle;
     private EditText taskDescription;
     private Spinner taskState;
-    private Spinner selectTeamSpinner;
     private TextView totalTask;
     private Button addTaskButton;
 
@@ -72,7 +72,6 @@ public class AddTaskActivity extends AppCompatActivity {
         //manuallyInitializeTheTeams();
 
         addTaskButton.setOnClickListener(view -> addTaskButtonAction());
-
     }
 
     private void saveTask() {
@@ -80,7 +79,7 @@ public class AddTaskActivity extends AppCompatActivity {
         String taskTitleString = taskTitle.getText().toString();
         String taskDescriptionString = taskDescription.getText().toString();
         String taskStateString = taskState.getSelectedItem().toString();
-        String teamString = selectTeamSpinner.getSelectedItem().toString();
+        //String teamString = selectTeamSpinner.getSelectedItem().toString();
 
 
         //saveTaskToLocalDB(taskTitleString,taskDescriptionString,taskStateString);
@@ -110,8 +109,8 @@ public class AddTaskActivity extends AppCompatActivity {
         https://developer.android.com/guide/topics/ui/controls/spinner
          */
         List<String> teams = new ArrayList<>();
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
-            teams = TeamDatabase.getInstance(this).teamDao().getAll().stream().map(com.example.taskmaster.data.Team::getName).collect(Collectors.toList());
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            teams = SplashActivity.teamsList.stream().map(Team::getName).sorted().collect(Collectors.toList());
         }
 
         /*
@@ -119,7 +118,7 @@ public class AddTaskActivity extends AppCompatActivity {
          */
         Spinner spinner = findViewById(R.id.task_team_spinner);
         // Create an ArrayAdapter using the string array and a default spinner layout
-        ArrayAdapter<String> adapter = new ArrayAdapter(this, android.R.layout.simple_spinner_item,
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item,
                 teams);
         // Specify the layout to use when the list of choices appears
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -129,8 +128,8 @@ public class AddTaskActivity extends AppCompatActivity {
 
     private void navigateToHomePage() {
         Intent intent = new Intent(this, MainActivity.class);
-        startActivity(intent);
         finish();
+        startActivity(intent);
     }
 
     private void addTaskButtonAction() {
@@ -149,8 +148,6 @@ public class AddTaskActivity extends AppCompatActivity {
             InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
             imm.hideSoftInputFromWindow(view2.getWindowToken(), 0);
         }
-
-
     }
 
     private void backToPreviousButton() {
@@ -173,84 +170,81 @@ public class AddTaskActivity extends AppCompatActivity {
         taskDescription = findViewById(R.id.taskDescriptionBox);
         taskState = findViewById(R.id.task_states_spinner);
         totalTask = findViewById(R.id.tasksCount);
-        selectTeamSpinner = findViewById(R.id.task_team_spinner);
-
+        //Spinner selectTeamSpinner = findViewById(R.id.task_team_spinner);
     }
 
     private void createHandlerMethode() {
 
         handler = new Handler(Looper.getMainLooper(), message -> {
-            String data = message.getData().getString(DATA);
             String teamId = message.getData().getString(TEAM_ID);
 
 //            Toast.makeText(this, "The Toast Works " + data, Toast.LENGTH_SHORT).show();
 
             Intent intent = new Intent(this, MainActivity.class);
             intent.putExtra(TEAM_ID, teamId);
-
+            finish();
             startActivity(intent);
             return true;
         });
     }
 
-    private void manuallyInitializeTheTeams() {
-        //Add the team to the task
-        Team team1 = Team.builder()
-                .name("First Team")
-                .build();
-        Amplify.DataStore.save(team1, pass -> {
-                    Log.i(TAG, "Saved Task To the Team => " + pass.item().getName());
-                },
-                failure -> {
-                    Log.e(TAG, "Could not save Team to Task ", failure);
-                });
-        //Add the team to the task
-        Team team2 = Team.builder()
-                .name("Second Team")
-                .build();
-        Amplify.DataStore.save(team2, pass -> {
-                    Log.i(TAG, "Saved Task To the Team => " + pass.item().getName());
-                },
-                failure -> {
-                    Log.e(TAG, "Could not save Team to Task ", failure);
-                });
-        //Add the team to the task
-        Team team3 = Team.builder()
-                .name("Third Team")
-                .build();
-        Amplify.DataStore.save(team3, pass -> {
-                    Log.i(TAG, "Saved Task To the Team => " + pass.item().getName());
-                },
-                failure -> {
-                    Log.e(TAG, "Could not save Team to Task ", failure);
-                });
-    }
+//    private void manuallyInitializeTheTeams() {
+//        //Add the team to the task
+//        Team team1 = Team.builder()
+//                .name("First Team")
+//                .build();
+//        Amplify.DataStore.save(team1, pass -> {
+//                    Log.i(TAG, "Saved Task To the Team => " + pass.item().getName());
+//                },
+//                failure -> {
+//                    Log.e(TAG, "Could not save Team to Task ", failure);
+//                });
+//        //Add the team to the task
+//        Team team2 = Team.builder()
+//                .name("Second Team")
+//                .build();
+//        Amplify.DataStore.save(team2, pass -> {
+//                    Log.i(TAG, "Saved Task To the Team => " + pass.item().getName());
+//                },
+//                failure -> {
+//                    Log.e(TAG, "Could not save Team to Task ", failure);
+//                });
+//        //Add the team to the task
+//        Team team3 = Team.builder()
+//                .name("Third Team")
+//                .build();
+//        Amplify.DataStore.save(team3, pass -> {
+//                    Log.i(TAG, "Saved Task To the Team => " + pass.item().getName());
+//                },
+//                failure -> {
+//                    Log.e(TAG, "Could not save Team to Task ", failure);
+//                });
+//    }
 
     private void saveToCloudDB(String taskTitleString, String taskDescriptionString, String taskStateString) {
 
         // Lab 32 \\
+        Team team1 = SplashActivity.teamsList.stream().filter(team -> team.getName().equals("First Team")).collect(Collectors.toList()).get(0);
 
-
-        Team team1 = Team.builder().name("First Team").build();
-        Team team2 = Team.builder().name("Second Team").build();
-        Team team3 = Team.builder().name("Third Team").build();
+//        Team team2 = Team.builder().name("Second Team").build();
+//        Team team3 = Team.builder().name("Third Team").build();
 
         Task task = Task.builder()
                 .title(taskTitleString)
                 .description(taskDescriptionString)
                 .status(taskStateString)
-                .teamTasksId(team3.getId())
+                .teamTasksId(team1.getId())
                 .build();
 
         // Data store save
-        Amplify.DataStore.save(team3,
+        Amplify.DataStore.save(team1,
                 success -> {
                     Amplify.DataStore.save(task,
                             savedTask -> {
-                                Log.i("Task in add task page ", team3.getId());
+                                Log.i("Task in add task page ", team1.getId());
 
                                 Bundle bundle = new Bundle();
-                                bundle.putString(TEAM_ID, team3.getId());
+                                bundle.putString(TEAM_ID, team1.getId());
 
                                 Message message = new Message();
                                 message.setData(bundle);
@@ -266,54 +260,28 @@ public class AddTaskActivity extends AppCompatActivity {
         );
 
         // API save to backend
-        Amplify.API.mutate(ModelMutation.create(team3),
-                success -> {
-                    Log.i(TAG, "Saved item: " + success.getData().getName());
+        Amplify.API.mutate(ModelMutation.create(team1),
+                success -> Amplify.API.mutate(ModelMutation.create(task),
+                        successTask -> {
+                    Log.i(TAG, "Task saved to team from API => " + successTask.getData().getId());
 
-                    Amplify.API.mutate(ModelMutation.create(task),
-                            successTask -> {
-                        Log.i(TAG, "Task saved to team from API => " + successTask.getData().getId());
+                            Bundle bundle = new Bundle();
+                            bundle.putString(TEAM_ID, team1.getId());
 
-                                Bundle bundle = new Bundle();
-                                bundle.putString(TEAM_ID, team3.getId());
+                            Message message = new Message();
+                            message.setData(bundle);
 
-                                Message message = new Message();
-                                message.setData(bundle);
-
-                                handler.sendMessage(message);
-                            },
-                            failure -> Log.i(TAG, "Task not saved to the team from API => "));
-                },
+                            handler.sendMessage(message);
+                        },
+                        failure -> Log.i(TAG, "Task not saved to the team from API => ")),
                 error -> Log.e(TAG, "Could not save team to API ", error)
         );
-
+        SplashActivity.tasksList.add(task);
         createHandlerMethode();
     }
 
-    private void dataStoreSync(){
 
-        // Datastore and API sync
-//        Amplify.DataStore.observe(Team.class,
-//                started -> {
-//                    Log.i(TAG, "Observation began. ");
-//                },
-//                change -> {
-//                    Log.i(TAG, change.item().toString());
-//
-//                    Bundle bundle = new Bundle();
-//                    bundle.putString(DATA, change.item().toString());
-//
-//                    Message message = new Message();
-//                    message.setData(bundle);
-//
-//                    handler.sendMessage(message);
-//                },
-//                failure -> Log.e(TAG, "Observation failed. ", failure),
-//                () -> Log.i(TAG, "Observation complete. ")
-//        );
-    }
-
-    private void saveTeamToLocalDB() {
+//    private void saveTeamToLocalDB() {
 
         //        Log.i(TAG, "saveTask: TaskStateString is =>  " + taskStateString);
 //
@@ -349,13 +317,14 @@ public class AddTaskActivity extends AppCompatActivity {
         //        Task newTask = new Task(taskTitleString, taskDescriptionString, taskState);
 //        TaskDatabase.getInstance(getApplicationContext()).taskDao().insertTask(newTask);
 
-        com.example.taskmaster.data.Team team1 = new com.example.taskmaster.data.Team("First Team");
-        com.example.taskmaster.data.Team team2 = new com.example.taskmaster.data.Team("Second Team");
-        com.example.taskmaster.data.Team team3 = new com.example.taskmaster.data.Team("Third Team");
+//        com.example.taskmaster.data.Team team1 = new com.example.taskmaster.data.Team("First Team");
+//        com.example.taskmaster.data.Team team2 = new com.example.taskmaster.data.Team("Second Team");
+//        com.example.taskmaster.data.Team team3 = new com.example.taskmaster.data.Team("Third Team");
+//
+//        TeamDatabase.getInstance(this).teamDao().insertTeam(team1);
+//        TeamDatabase.getInstance(this).teamDao().insertTeam(team2);
+//        TeamDatabase.getInstance(this).teamDao().insertTeam(team3);
 
-        TeamDatabase.getInstance(this).teamDao().insertTeam(team1);
-        TeamDatabase.getInstance(this).teamDao().insertTeam(team2);
-        TeamDatabase.getInstance(this).teamDao().insertTeam(team3);
+ //   }
 
-    }
 }

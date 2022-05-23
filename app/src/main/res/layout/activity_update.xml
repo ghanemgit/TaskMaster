@@ -60,12 +60,20 @@
         android:layout_marginTop="50dp"
         />
 
+    <Spinner
+        android:id="@+id/task_team_update_spinner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/update_task_states_spinner"
+        android:layout_marginStart="12dp"
+        android:layout_marginTop="40dp"
+        android:fontFamily="serif" />
 
     <Button
         android:id="@+id/updateTaskButton"
         android:layout_width="110dp"
         android:layout_height="47dp"
-        android:layout_below="@+id/update_task_states_spinner"
+        android:layout_below="@+id/task_team_update_spinner"
         android:layout_centerHorizontal="true"
         android:fontFamily="serif"
         android:layout_marginTop="25dp"
