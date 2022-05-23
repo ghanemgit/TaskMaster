@@ -66,7 +66,7 @@ public class SettingActivity extends AppCompatActivity {
         Log.i(TAG, "saveUser: userName is => " + username);
         Log.i(TAG, "saveUser: userTeam is => " + userTeam);
         preferenceEditor.apply();
-        backToSplashScreen();
+        backToMainActivity();
     }
 
     public static String getDefaults(String key, Context context) {
@@ -74,9 +74,9 @@ public class SettingActivity extends AppCompatActivity {
         return preferences.getString(key, null);
     }
 
-    public void backToSplashScreen() {
-        startActivity(new Intent(this, SplashActivity.class));
+    public void backToMainActivity() {
         finish();
+        startActivity(new Intent(this, MainActivity.class));
     }
 
     private void setAdapterToStatesTeamArraySpinner() {
@@ -107,6 +107,7 @@ public class SettingActivity extends AppCompatActivity {
             mUsername.setError("username is required");
         } else {
             saveUser();
+            disableTheTextEdit();
             Toast.makeText(this, "Saved", Toast.LENGTH_SHORT).show();
         }
 
@@ -133,5 +134,19 @@ public class SettingActivity extends AppCompatActivity {
         In this video i learned how to add back button in action bar
         */
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
+    }
+
+    private void disableTheTextEdit(){
+
+        mUsername.setEnabled(false);
+        selectTeamSpinner.setEnabled(false);
+
+    }
+
+    private void enableTheTextEdit(){
+
+        mUsername.setEnabled(true);
+        selectTeamSpinner.setEnabled(true);
+
     }
 }

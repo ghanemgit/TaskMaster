@@ -3,9 +3,11 @@ package com.example.taskmaster.ui;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Typeface;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.Message;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
@@ -21,25 +23,31 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.MenuCompat;
 
+import com.amplifyframework.core.Amplify;
 import com.amplifyframework.datastore.generated.model.Task;
+import com.amplifyframework.datastore.generated.model.Team;
 import com.example.taskmaster.R;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
+@RequiresApi(api = Build.VERSION_CODES.N)
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = MainActivity.class.getSimpleName();
     private TextView usernameWelcoming;
     private FloatingActionButton floatAddTaskButton;
     private List<Task> tasksList = new ArrayList<>();
+    private String theUserTeamString = "";
+    private String theUserTeamId = "";
     private String selectedItem = "";
-    private Handler handler;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,17 +55,30 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Log.i(TAG, "onCreate: called");
 
-        findById();
 
+        findById();
+        showSharedPreferencesInfo();
+
+
+        if (isTheUserSetTheTeamName()){
+
+            //set adapter for filter tasks spinner
+            setAdapterToStatesTaskArraySpinner();
+
+            taskFilterSpinner();
+
+            getTasksListToHomePage();
+
+
+        }else {
+            navigateToSetting();
+            finish();
+        }
         //Floating add task button in main activity
         floatAddTaskButton.setOnClickListener(view -> navigateToAddTaskPage());
 
-        RecyclerViewHandler();
 
-        //set adapter for filter tasks spinner
-        setAdapterToStatesTaskArraySpinner();
 
-        taskFilterSpinner();
     }
 
     @Override
@@ -78,7 +99,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         showSharedPreferencesInfo();
         //render the tasks to home page
-        getTasksListToHomePage();
         super.onResume();
         Log.i(TAG, "onResume: called");
     }
@@ -88,6 +108,11 @@ public class MainActivity extends AppCompatActivity {
     protected void onStop() {
         super.onStop();
         Log.i(TAG, "onStop: called");
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
     }
 
 
@@ -119,7 +144,6 @@ public class MainActivity extends AppCompatActivity {
     private void navigateToAddTaskPage() {
         Intent intent = new Intent(MainActivity.this, AddTaskActivity.class);
         startActivity(intent);
-
     }
 
     private void navigateToAllTaskPage() {
@@ -129,9 +153,17 @@ public class MainActivity extends AppCompatActivity {
 
     private void navigateToSetting() {
         Intent intent = new Intent(this, SettingActivity.class);
+        overridePendingTransition(0, 0);
         startActivity(intent);
+        overridePendingTransition(0, 0);
     }
 
+    public void bringDataFromAddTaskActivity(Task taskFromAddActivity){
+
+        tasksList.add(taskFromAddActivity);
+
+
+    }
     //Set up the username details to show it in the home screen
     private void showSharedPreferencesInfo() {
 
@@ -139,6 +171,7 @@ public class MainActivity extends AppCompatActivity {
 
         usernameWelcoming.setText(sharedPreferences.getString(SettingActivity.USER_TEAM, SettingActivity.USERNAME));
 
+        theUserTeamString = sharedPreferences.getString(SettingActivity.USER_TEAM,null);
     }
 
     private void initializeData() {
@@ -163,10 +196,29 @@ public class MainActivity extends AppCompatActivity {
 //        TaskDatabase.getInstance(this).taskDao().insertTask(new Task("Bring Helper Tools", "Go and bring all the necessary helper tools" +
 //                " like Wooden spoon ,Measuring cup ,Mixing bowl and spatula etc..", TaskState.Completed));
 //
-        tasksList = SplashActivity.tasksList;
+
+        theUserTeamId = SplashActivity.teamsList.stream().filter(team ->
+                team.getName().equals(theUserTeamString)).collect(Collectors.toList()).get(0).getId();
+        tasksList = SplashActivity.tasksList.stream().filter(task -> task.getTeamTasksId().equals(theUserTeamId)).collect(Collectors.toList());
+
+        switch (selectedItem) {
+            case "New":
+            case "Assigned":
+            case "In progress":
+            case "Completed":
+                tasksList = tasksList.stream().filter(task -> task.getStatus().equals(selectedItem)).collect(Collectors.toList());
+                break;
+            default:
+
+        }
         //fetchDataFromLocal();
 
 
+    }
+
+    private boolean isTheUserSetTheTeamName() {
+
+        return theUserTeamString != null && SplashActivity.teamsList.stream().anyMatch(team -> team.getName().equals(theUserTeamString));
     }
 
     private void getTasksListToHomePage() {
@@ -204,21 +256,12 @@ public class MainActivity extends AppCompatActivity {
         listViewTasksList.setOnItemClickListener((adapterView, view, i, l) -> {
             Intent intent = new Intent(getApplicationContext(), TaskDetailsActivity.class);
             intent.putExtra("Position", tasksList.get(i).getId());
+            System.out.println("The task from the onitemclicklistener is "+tasksList.get(i).getTitle());
             startActivity(intent);
         });
     }
 
-    private void RecyclerViewHandler() {
-        System.out.println("The final size of list is from recycler view =>" + tasksList.size());
 
-        handler = new Handler(Looper.getMainLooper(), msg -> {
-
-            new RecyclerViewActivity(tasksList);
-
-            return true;
-
-        });
-    }
 
     private void fetchDataFromLocal() {
         /*
@@ -292,5 +335,33 @@ public class MainActivity extends AppCompatActivity {
          */
         floatAddTaskButton = findViewById(R.id.add_task_button_floating);
     }
+
+    private void dataStoreSync(){
+
+        // Datastore and API sync
+//        Amplify.DataStore.observe(Team.class,
+//                startTeamObserve -> {
+//                    Log.i(TAG, "Observation began. ");
+//
+//                    Amplify.DataStore.observe(Task.class,
+//                            startTaskObserve -> {
+//                                Log.i(TAG, "Observation began. ");
+//                            },
+//                            change -> Log.i(TAG, change.item().toString()),
+//
+//                            failure -> Log.e(TAG, "Observation failed. ", failure),
+//
+//                            () -> Log.i(TAG, "Observation complete. ")
+//                    );
+//                },
+//
+//                change -> Log.i(TAG, change.item().toString()),
+//
+//                failure -> Log.e(TAG, "Observation failed. ", failure),
+//
+//                () -> Log.i(TAG, "Observation complete. ")
+//        );
+    }
+
 
 }

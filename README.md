@@ -5,6 +5,12 @@
 #### As ASAC required from us we will start building application responsible to distributing, management, creating and editing the tasks for user, so we start this build after midterm project and we will use Android studio to help us build this application.
 
 
+# Day 8
+#### Today I learned how to make my app ready to publish to the play store and how to create developer account in google console, also I learned how to build my project as an apk file and attached it to this directory.
+#### To show my apk version please go [here](app/release).
+
+
+
 # Day 7
 #### Today I learned how to make different relations between the database tables, so in this project I used the one to many relationship, in addition I learned how to query the data from cloud api and and how to filter the result from the api, also I learned how to make splash screen, and the most important thing I learned today is how to connect the results from the query with the recycler view, the last thing I learned today is how to show the tasks that related with the user team only.
 ### The workflow for my app now is
