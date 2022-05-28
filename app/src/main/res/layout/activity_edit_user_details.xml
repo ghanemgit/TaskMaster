@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".Auth.LoginActivity">
+
+
+    <TextView
+        android:id="@+id/edit_info_text"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginStart="15dp"
+        android:layout_marginEnd="15dp"
+        android:background="@drawable/rounded_edit_text_teal"
+        android:fontFamily="serif"
+        android:gravity="center"
+        android:text="Edit Information"
+        android:textColor="@color/white"
+        android:textSize="30sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/styledEditTextFirstName"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/edit_info_text"
+        android:layout_width="match_parent">
+        <EditText
+            android:id="@+id/edit_first_name_box"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginStart="15dp"
+            android:layout_marginEnd="15dp"
+            android:autofillHints="emailAddress"
+            android:background="@drawable/half_rounded_edit_text"
+            android:fontFamily="serif"
+            android:gravity="center_vertical"
+            android:hint="First Name"
+            android:inputType="text"
+            android:textColorHighlight="@color/teal_200"
+            android:textColorHint="#3BACB6"
+
+            />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/styledEditTextLastName"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/styledEditTextFirstName"
+        android:layout_width="match_parent">
+        <EditText
+            android:id="@+id/edit_last_name_box"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_marginTop="15dp"
+            android:layout_marginStart="15dp"
+            android:layout_marginEnd="15dp"
+            android:autofillHints="emailAddress"
+            android:background="@drawable/half_rounded_edit_text"
+            android:fontFamily="serif"
+            android:gravity="center_vertical"
+            android:hint="Last Name"
+            android:inputType="text"
+            android:textColorHighlight="@color/teal_200"
+            android:textColorHint="#3BACB6"
+
+            />
+    </com.google.android.material.textfield.TextInputLayout>
+
+
+    <Spinner
+        android:id="@+id/edit_task_team_spinner"
+        android:layout_width="200dp"
+        android:layout_height="40dp"
+        android:layout_marginTop="15dp"
+        android:layout_marginStart="50dp"
+        android:background="@drawable/rounded_edit_text_teal"
+        android:layout_marginEnd="50dp"
+        android:fontFamily="serif"
+        app:layout_constraintTop_toBottomOf="@+id/styledEditTextLastName"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:layout_editor_absoluteX="16dp" />
+
+    <Button
+        android:id="@+id/edit_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="15dp"
+        android:backgroundTint="#3BACB6"
+        android:fontFamily="serif"
+        android:text="Save"
+        app:layout_constraintTop_toBottomOf="@+id/edit_task_team_spinner"
+        android:gravity="center"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:textColor="@color/white" />
+
+
+
+    <ProgressBar
+        android:id="@+id/loading"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@+id/edit_info_text"
+        android:visibility="invisible"
+        />
+
+
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,45 +1,43 @@
 package com.example.taskmaster.ui;
 
-import androidx.annotation.RequiresApi;
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Looper;
 import android.util.Log;
+
+import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.amplifyframework.AmplifyException;
 import com.amplifyframework.api.aws.AWSApiPlugin;
 import com.amplifyframework.api.graphql.model.ModelQuery;
+import com.amplifyframework.auth.AuthUserAttribute;
+import com.amplifyframework.auth.cognito.AWSCognitoAuthPlugin;
 import com.amplifyframework.core.Amplify;
 import com.amplifyframework.datastore.AWSDataStorePlugin;
 import com.amplifyframework.datastore.generated.model.Task;
 import com.amplifyframework.datastore.generated.model.Team;
+import com.example.taskmaster.Auth.LoginActivity;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 @RequiresApi(api = Build.VERSION_CODES.N)
 public class SplashActivity extends AppCompatActivity {
+
     private static final String TAG = SplashActivity.class.getSimpleName();
-    static List<Task> tasksList = new ArrayList<>();
-    static List<Team> teamsList = new ArrayList<>();
-    private static String theUserTeamId = "";
-    private static String theUserTeamString = "";
-    private static boolean isSet = false;
+    public static List<Team> teamsList = new ArrayList<>();
+    public static List<AuthUserAttribute> userAttributes = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         configureAmplify();
-        fetchTaskDataFromAPI();
+        checkTheSession();
         fetchTeamsData();
-        RecyclerViewHandler();
+        fetchTasksDataFromAPI();
         splashScreenLaunch();
-
     }
 
     @Override
@@ -58,22 +56,23 @@ public class SplashActivity extends AppCompatActivity {
 
                 //This method will be executed once the timer is over
                 // Start your app main activity
-                Intent intent = new Intent(SplashActivity.this, MainActivity.class);
+                Intent intent = new Intent(SplashActivity.this, LoginActivity.class);
                 startActivity(intent);
                 // close this activity
                 finish();
             }
-        }, 1500);
-
+        }, 1000);
     }
 
     private void configureAmplify() {
         try {
             Amplify.addPlugin(new AWSDataStorePlugin());
             Amplify.addPlugin(new AWSApiPlugin());
+            // Add this line, to include the Auth plugin.
+            Amplify.addPlugin(new AWSCognitoAuthPlugin());
             Amplify.configure(getApplicationContext());
         } catch (AmplifyException error) {
-            Log.e("MyAmplifyApp", "Could not initialize Amplify", error);
+            Log.e(TAG, "Could not initialize Amplify", error);
         }
     }
 
@@ -93,54 +92,54 @@ public class SplashActivity extends AppCompatActivity {
 
     }
 
-    public void fetchTaskDataFromAPI() {
+    private void checkTheSession(){
+        Amplify.Auth.fetchAuthSession(
+                result -> {
+                    Log.i(TAG, result.toString());
+                    if (result.isSignedIn()){
+                        fetchCurrentUserAttributes();
+                        navigateToMainActivity();
+                    }else {
+                        navigateToLoginPage();
+                    }
+                },
+                error -> Log.e(TAG, error.toString())
+        );
+    }
 
-            Amplify.API.query(
-                    ModelQuery.list(Task.class),
-                    tasks -> {
-                        if (tasks.hasData()) {
-                            tasksList.clear();
-                            for (Task task : tasks.getData()) {
-                                tasksList.add(task);
-                            }
-                            Log.i(TAG, "fetchTaskDataFromAPI: Tasks import Done => "+tasksList.size());
+    private void fetchTasksDataFromAPI() {
+
+        Amplify.API.query(
+                ModelQuery.list(Task.class),
+                tasks -> {
+                    MainActivity.tasksList.clear();
+                    if (tasks.hasData()) {
+                        for (Task task : tasks.getData()) {
+                            MainActivity.tasksList.add(task);
                         }
-                    },
-                    error -> Log.e(TAG, error.toString())
-            );
+                        Log.i(TAG, "fetchTaskDataFromAPI: Tasks import Done => " + MainActivity.tasksList.size());
+                    }
+                },
+                error -> Log.e(TAG, error.toString())
+        );
     }
 
-    private static void filterUserTaskAccordingToTeam(){
-//
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-//            List<Team> tempList = teamsList.stream().filter(team -> team.getName().equals(theUserTeamString)).collect(Collectors.toList());
-//            theUserTeamId = tempList.get(0).getId();
-//        }
-//        Amplify.API.query(
-//                ModelQuery.list(Task.class, Task.TEAM_TASKS_ID.eq(theUserTeamId)),
-//                tasks -> {
-//                    if (tasks.hasData()) {
-//                        tasksList.clear();
-//                        for (Task task : tasks.getData()) {
-//                            tasksList.add(task);
-//                        }
-//                    }
-//                },
-//                error -> Log.e(TAG, error.toString())
-//        );
+    private void fetchCurrentUserAttributes(){
+
+        Amplify.Auth.fetchUserAttributes(
+                attributes -> {
+                    Log.i(TAG, "User attributes = " + attributes);
+                    userAttributes = attributes;
+                },
+                error -> Log.e(TAG, "Failed to fetch user attributes.", error)
+        );
     }
 
-    private void RecyclerViewHandler() {
-
-        System.out.println("The final size of list is from recycler view =>" + tasksList.size());
-
-        Handler handler = new Handler(Looper.getMainLooper(), msg -> {
-
-            new RecyclerViewActivity(tasksList);
-
-            return true;
-
-        });
+    private void navigateToLoginPage(){
+        startActivity(new Intent(this,LoginActivity.class));
     }
 
+    private void navigateToMainActivity(){
+        startActivity(new Intent(this,MainActivity.class));
+    }
 }

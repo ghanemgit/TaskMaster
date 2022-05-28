@@ -12,7 +12,6 @@
     <group android:id="@+id/group_divider2">
     <item android:id="@+id/action_settings"
         android:title="@string/action_settings"
-
         android:orderInCategory="100"
         app:showAsAction="never" />
     </group>
@@ -22,6 +21,13 @@
         android:orderInCategory="200"
         app:showAsAction="never" />
     </group>
+    <group android:id="@+id/group_divider4">
+        <item android:id="@+id/action_sign_out"
+            android:title="Sign out"
+            android:orderInCategory="200"
+            app:showAsAction="never" />
+    </group>
+
 
 
 </menu>

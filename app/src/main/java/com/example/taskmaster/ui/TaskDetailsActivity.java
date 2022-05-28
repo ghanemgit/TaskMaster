@@ -1,9 +1,5 @@
 package com.example.taskmaster.ui;
 
-import androidx.annotation.RequiresApi;
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
@@ -12,13 +8,18 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.amplifyframework.api.graphql.model.ModelMutation;
 import com.amplifyframework.core.Amplify;
 import com.amplifyframework.core.model.query.Where;
 import com.amplifyframework.datastore.generated.model.Task;
 import com.example.taskmaster.R;
 
-
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 @RequiresApi(api = Build.VERSION_CODES.N)
@@ -26,6 +27,8 @@ public class TaskDetailsActivity extends AppCompatActivity {
 
     private static final String TAG = TaskDetailsActivity.class.getSimpleName();
     private Task currentTask = null;
+    public static List<Task> tempTask = new ArrayList<>();
+    private Task taskFromAddTaskPage=null;
     private String teamName = "";
     private TextView state;
     private TextView body;
@@ -41,15 +44,13 @@ public class TaskDetailsActivity extends AppCompatActivity {
 
         findAllViewById();
 
-        loadTaskInfo();
+        loadTaskInfoFromMain();
 
         setTextForTaskView();
 
-        deleteButton.setOnClickListener(view -> deleteTaskButtonAction());
-
         editButton.setOnClickListener(view -> editTask());
 
-
+        deleteButton.setOnClickListener(view -> deleteTaskButtonAction());
     }
 
     public void setActionBarTitleButton(String title) {
@@ -76,25 +77,27 @@ public class TaskDetailsActivity extends AppCompatActivity {
         editButton = findViewById(R.id.edit_button);
     }
 
-    private void loadTaskInfo() {
+    private void loadTaskInfoFromMain() {
 
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            currentTask = SplashActivity.tasksList.stream().filter(task1 -> task1.getId().equals(getIntent().getStringExtra("Position"))).collect(Collectors.toList()).get(0);
-        }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            currentTask = MainActivity.tasksList.stream().filter(task1 -> task1.getId().equals(getIntent().getStringExtra("Position"))).collect(Collectors.toList()).get(0);
+
             Task finalCurrentTask = currentTask;
+
             teamName = SplashActivity.teamsList.stream().filter(team1 -> team1.getId().equals(finalCurrentTask.getTeamTasksId())).collect(Collectors.toList()).get(0).getName();
-        }
+
     }
 
+
+
+
     private void setTextForTaskView() {
+
 
         state.setText("State => " + currentTask.getStatus());
         body.setText("Description:\n" + currentTask.getDescription());
         team.setText("This task for => " + teamName);
         setActionBarTitleButton(currentTask.getTitle());
-
     }
 
 
@@ -102,7 +105,7 @@ public class TaskDetailsActivity extends AppCompatActivity {
 
         AlertDialog.Builder deleteAlert = new AlertDialog.Builder(TaskDetailsActivity.this);
         deleteAlert.setTitle("Warning!");
-        deleteAlert.setMessage("Are you sure to delete the task");
+        deleteAlert.setMessage("Are you sure to delete the task?");
         /*
         How to add alert to my program
         https://stackoverflow.com/questions/23195208/how-to-pop-up-a-dialog-to-confirm-delete-when-user-long-press-on-the-list-item
@@ -120,11 +123,6 @@ public class TaskDetailsActivity extends AppCompatActivity {
 
     private void deleteTaskFromLocalAndApi() {
 
-        Amplify.API.mutate(ModelMutation.delete(currentTask),
-                response -> Log.i("MyAmplifyApp", "Todo with id: "),
-                error -> Log.e("MyAmplifyApp", "Create failed", error)
-        );
-
         Amplify.DataStore.query(Task.class, Where.id(currentTask.getId()),
                 matches -> {
                     if (matches.hasNext()) {
@@ -136,6 +134,11 @@ public class TaskDetailsActivity extends AppCompatActivity {
                     }
                 },
                 failure -> Log.e("MyAmplifyApp", "Query failed.", failure)
+        );
+
+        Amplify.API.mutate(ModelMutation.delete(currentTask),
+                response -> Log.i("MyAmplifyApp", "Todo with id: "),
+                error -> Log.e("MyAmplifyApp", "Create failed", error)
         );
 
     }

@@ -1,14 +1,15 @@
 package com.example.taskmaster.ui;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
-import android.os.Message;
 import android.preference.PreferenceManager;
+import android.text.SpannableString;
+import android.text.style.ForegroundColorSpan;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -24,13 +25,13 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.MenuCompat;
 
 import com.amplifyframework.core.Amplify;
 import com.amplifyframework.datastore.generated.model.Task;
-import com.amplifyframework.datastore.generated.model.Team;
+import com.example.taskmaster.Auth.LoginActivity;
+import com.example.taskmaster.Auth.SignUpActivity;
 import com.example.taskmaster.R;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -39,15 +40,18 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RequiresApi(api = Build.VERSION_CODES.N)
+@SuppressLint("SetTextI18n")
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = MainActivity.class.getSimpleName();
     private TextView usernameWelcoming;
     private FloatingActionButton floatAddTaskButton;
-    private List<Task> tasksList = new ArrayList<>();
+    public static List<Task> tasksList = new ArrayList<>();
     private String theUserTeamString = "";
     private String theUserTeamId = "";
     private String selectedItem = "";
+    private LoadingDialog loadingDialog;
+    private TextView loadingText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,29 +60,22 @@ public class MainActivity extends AppCompatActivity {
         Log.i(TAG, "onCreate: called");
 
 
-        findById();
+        findAllViewsById();
+
         showSharedPreferencesInfo();
 
+        setTheUserTeamString();
 
-        if (isTheUserSetTheTeamName()){
+        //set adapter for filter tasks spinner
+        setAdapterToStatesTaskArraySpinner();
 
-            //set adapter for filter tasks spinner
-            setAdapterToStatesTaskArraySpinner();
+        taskFilterSpinner();
 
-            taskFilterSpinner();
-
-            getTasksListToHomePage();
+        getTasksListToHomePage();
 
 
-        }else {
-            navigateToSetting();
-            finish();
-        }
         //Floating add task button in main activity
         floatAddTaskButton.setOnClickListener(view -> navigateToAddTaskPage());
-
-
-
     }
 
     @Override
@@ -97,9 +94,8 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onResume() {
-        showSharedPreferencesInfo();
-        //render the tasks to home page
         super.onResume();
+        showSharedPreferencesInfo();
         Log.i(TAG, "onResume: called");
     }
 
@@ -117,6 +113,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     //Set what happens when click on item from the overflow menu
+    @SuppressLint("NonConstantResourceId")
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
@@ -129,6 +126,10 @@ public class MainActivity extends AppCompatActivity {
             case R.id.action_all_tasks:
                 navigateToAllTaskPage();
                 return true;
+            case R.id.action_sign_out:
+                loadingDialog.startLoadingDialog();
+                signOut();
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -137,8 +138,24 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main, menu);
+        /*
+        https://stackoverflow.com/questions/3519277/how-to-change-the-text-color-of-menu-item-in-android
+        how to change an item color in overflow menu
+        */
+        int positionOfMenuItem = 3; // or whatever...
+        MenuItem item = menu.getItem(positionOfMenuItem);
+        SpannableString s = new SpannableString("Sign out");
+        s.setSpan(new ForegroundColorSpan(Color.RED), 0, s.length(), 0);
+        item.setTitle(s);
         MenuCompat.setGroupDividerEnabled(menu, true);
         return true;
+    }
+
+    private void navigateToLoginPage() {
+        Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+        startActivity(intent);
+        loadingDialog.dismissLoadingDialog();
+        finish();
     }
 
     private void navigateToAddTaskPage() {
@@ -152,54 +169,29 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void navigateToSetting() {
-        Intent intent = new Intent(this, SettingActivity.class);
         overridePendingTransition(0, 0);
-        startActivity(intent);
+        startActivity(new Intent(this, SettingActivity.class));
         overridePendingTransition(0, 0);
     }
 
-    public void bringDataFromAddTaskActivity(Task taskFromAddActivity){
-
-        tasksList.add(taskFromAddActivity);
-
-
-    }
     //Set up the username details to show it in the home screen
     private void showSharedPreferencesInfo() {
 
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
-        usernameWelcoming.setText(sharedPreferences.getString(SettingActivity.USER_TEAM, SettingActivity.USERNAME));
+        usernameWelcoming.setText(sharedPreferences.getString(SignUpActivity.FIRST_NAME, "Guest")+" Tasks");
 
-        theUserTeamString = sharedPreferences.getString(SettingActivity.USER_TEAM,null);
+        usernameWelcoming.setText(sharedPreferences.getString(SignUpActivity.USER_TEAM,null) +" Tasks");
     }
 
     private void initializeData() {
 
-//        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-//        String noOfTaskToShow = sharedPreferences.getString(SettingActivity.NO_OF_TASK_TO_SHOW, "");
-//        int num = 0;
-//        if (!Objects.equals(noOfTaskToShow, "")) {
-//            num = Integer.parseInt(noOfTaskToShow);
-//        }
-//        Log.i(TAG, "initialiseData: The value of num is = " + num);
-
-
-        /*
-         * To initial the app in first time open but if you keep it without comment,
-         * every time you call the main activity will add these tasks to database and show it in the home screen
-         */
-//        TaskDatabase.getInstance(this).taskDao().insertTask(new Task("Bring Ingredients", "Go to market and bring some milk and 5 eggs and some butter and don't forget the flour"
-//        , TaskState.In_progress));
-//        TaskDatabase.getInstance(this).taskDao().insertTask(new Task("Sort Ingredients", "Sort our Ingredients according to" +
-//                " when we will use it and start clean the place where we will work", TaskState.Assigned));
-//        TaskDatabase.getInstance(this).taskDao().insertTask(new Task("Bring Helper Tools", "Go and bring all the necessary helper tools" +
-//                " like Wooden spoon ,Measuring cup ,Mixing bowl and spatula etc..", TaskState.Completed));
-//
-
         theUserTeamId = SplashActivity.teamsList.stream().filter(team ->
                 team.getName().equals(theUserTeamString)).collect(Collectors.toList()).get(0).getId();
-        tasksList = SplashActivity.tasksList.stream().filter(task -> task.getTeamTasksId().equals(theUserTeamId)).collect(Collectors.toList());
+        tasksList = tasksList.stream().filter(task -> task.getTeamTasksId().equals(theUserTeamId)).collect(Collectors.toList());
+
+        System.out.println("The user team stirng is  => "+theUserTeamString);
+        System.out.println("The size of tasks list from the main activity is => "+tasksList.size());
 
         switch (selectedItem) {
             case "New":
@@ -211,15 +203,9 @@ public class MainActivity extends AppCompatActivity {
             default:
 
         }
-        //fetchDataFromLocal();
-
-
     }
 
-    private boolean isTheUserSetTheTeamName() {
 
-        return theUserTeamString != null && SplashActivity.teamsList.stream().anyMatch(team -> team.getName().equals(theUserTeamString));
-    }
 
     private void getTasksListToHomePage() {
 
@@ -252,7 +238,6 @@ public class MainActivity extends AppCompatActivity {
             }
         };
         listViewTasksList.setAdapter(taskDataArrayAdapter);
-
         listViewTasksList.setOnItemClickListener((adapterView, view, i, l) -> {
             Intent intent = new Intent(getApplicationContext(), TaskDetailsActivity.class);
             intent.putExtra("Position", tasksList.get(i).getId());
@@ -262,29 +247,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-
-    private void fetchDataFromLocal() {
-        /*
-         * This switch to help user to show specific tasks according to states of tasks
-         * This used the lambda form as we learned to filter the tasks from the database
-         */
-//        switch (selectedItem) {
-//            case "Completed":
-//            case "New":
-//            case "Assigned":
-//            case "In progress":
-//
-//                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-//                    taskList = TaskDatabase.getInstance(this).taskDao().getAll().stream().filter(
-//                            task -> task.getTaskState().getDisplayValue().equals(selectedItem)).collect(Collectors.toList());
-//
-//                }
-//                break;
-//            default:
-//                taskList = TaskDatabase.getInstance(this).taskDao().getAll();
-//        }
-
-    }
 
     private void setAdapterToStatesTaskArraySpinner() {
 
@@ -328,40 +290,35 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void findById() {
+    private void findAllViewsById() {
         usernameWelcoming = findViewById(R.id.username_welcoming);
         /*
         https://developer.android.com/guide/topics/ui/floating-action-button
          */
         floatAddTaskButton = findViewById(R.id.add_task_button_floating);
+        loadingDialog = new LoadingDialog(MainActivity.this);
+
+        loadingText = findViewById(R.id.text_view_in_loading_progress);
     }
 
-    private void dataStoreSync(){
-
-        // Datastore and API sync
-//        Amplify.DataStore.observe(Team.class,
-//                startTeamObserve -> {
-//                    Log.i(TAG, "Observation began. ");
-//
-//                    Amplify.DataStore.observe(Task.class,
-//                            startTaskObserve -> {
-//                                Log.i(TAG, "Observation began. ");
-//                            },
-//                            change -> Log.i(TAG, change.item().toString()),
-//
-//                            failure -> Log.e(TAG, "Observation failed. ", failure),
-//
-//                            () -> Log.i(TAG, "Observation complete. ")
-//                    );
-//                },
-//
-//                change -> Log.i(TAG, change.item().toString()),
-//
-//                failure -> Log.e(TAG, "Observation failed. ", failure),
-//
-//                () -> Log.i(TAG, "Observation complete. ")
-//        );
+    private void setTheUserTeamString(){
+       theUserTeamString =  SettingActivity.getDefaults(SignUpActivity.USER_TEAM,this);
     }
 
+
+    private void signOut(){
+
+        Amplify.Auth.signOut(
+                () -> {
+                    Log.i(TAG, "Signed out successfully");
+                    navigateToLoginPage();
+                },
+                error -> {
+                    Log.e(TAG, error.toString());
+                    loadingDialog.dismissLoadingDialog();
+                    onResume();
+                }
+        );
+    }
 
 }
