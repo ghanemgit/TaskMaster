@@ -55,24 +55,24 @@
         android:layout_width="110dp"
         android:layout_height="47dp"
         android:layout_marginStart="40dp"
-        android:fontFamily="serif"
         android:text="@string/delete_button"
+        android:backgroundTint="@color/teal_700"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/edit_button"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/task_team_in_details_page"
-        app:layout_constraintVertical_bias="0.583" />
+         />
 
     <Button
         android:id="@+id/edit_button"
         android:layout_width="110dp"
         android:layout_height="47dp"
         android:layout_marginEnd="60dp"
-        android:fontFamily="serif"
         android:text="@string/edit_button"
+        android:backgroundTint="@color/teal_700"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/task_team_in_details_page"
-        app:layout_constraintVertical_bias="0.583" />
+         />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".Auth.VerificationCodeActivity">
+
+    <TextView
+        android:id="@+id/verification_text"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginStart="15dp"
+        android:layout_marginEnd="15dp"
+        android:background="@drawable/rounded_edit_text_teal"
+        android:gravity="center"
+        android:text="Verification code"
+        android:textColor="@color/white"
+        android:textSize="30sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/styled_edit_text_verification_code"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/verification_text"
+        android:layout_width="match_parent">
+        <EditText
+            android:id="@+id/verification_code_box"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="40dp"
+            android:layout_marginStart="15dp"
+            android:layout_marginEnd="15dp"
+            android:autofillHints="emailAddress"
+            android:background="@drawable/half_rounded_edit_text"
+            android:fontFamily="serif"
+            android:hint="verification code"
+            android:inputType="number"
+            android:textColorHighlight="@color/teal_200"
+            android:textColorHint="#3BACB6"
+            />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <TextView
+        android:id="@+id/or_text_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="15dp"
+        app:layout_constraintTop_toBottomOf="@+id/check_verification_code_button"
+        android:text="or"
+        android:gravity="center"
+        android:textSize="25sp"
+        android:textStyle="bold"
+        />
+    <Button
+        android:id="@+id/check_verification_code_button"
+        android:layout_width="150dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="15dp"
+        android:backgroundTint="#3BACB6"
+        android:text="Check"
+        app:layout_constraintTop_toBottomOf="@+id/styled_edit_text_verification_code"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:textColor="@color/black" />
+
+    <Button
+        android:id="@+id/go_to_login_page_button"
+        android:layout_width="150dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="15dp"
+        android:backgroundTint="#3BACB6"
+        android:text="Login"
+        app:layout_constraintTop_toBottomOf="@+id/or_text_view"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:textColor="@color/black" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

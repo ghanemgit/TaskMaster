@@ -40,11 +40,11 @@ public class UpdateActivity extends AppCompatActivity {
         setContentView(R.layout.activity_update);
 
 
-        newTask = SplashActivity.tasksList.stream().filter(task -> task.getId()
+        newTask = MainActivity.tasksList.stream().filter(task -> task.getId()
                 .equals(getIntent().getStringExtra("Id"))).collect(Collectors.toList()).get(0);
         newTeam = SplashActivity.teamsList.stream().filter(team ->
                 team.getId().equals(newTask.getTeamTasksId())).collect(Collectors.toList()).get(0);
-        Button saveButton = findViewById(R.id.updateTaskButton);
+        Button saveButton = findViewById(R.id.update_task_button);
         Button backButton = findViewById(R.id.backToDescriptionPage);
 
         initializeForm();
@@ -124,8 +124,8 @@ public class UpdateActivity extends AppCompatActivity {
         setAdapterToStatesTaskArraySpinner();
         setAdapterToStatesTeamArraySpinner();
 
-        taskTitle = findViewById(R.id.updateTaskTitleBox);
-        taskDescription = findViewById(R.id.updateTaskDescriptionBox);
+        taskTitle = findViewById(R.id.update_task_title_box);
+        taskDescription = findViewById(R.id.update_task_description_box);
         taskStateSpinner = findViewById(R.id.update_task_states_spinner);
         taskTeamSpinner = findViewById(R.id.task_team_update_spinner);
 

@@ -16,6 +16,11 @@
     <string name="delete_button">Delete</string>
     <string name="edit_button">Edit</string>
     <string name="update_task_title">Update Task</string>
+    <string name="login">Login</string>
+    <string name="password">Password</string>
+    <string name="email">Email</string>
+    <string name="create_new_account">Create New Account</string>
+    <string name="forget_password">Forget Password?</string>
 
     <string-array name="task_states_array">
         <item>State</item>
@@ -30,6 +35,11 @@
         <item>Assigned</item>
         <item>In progress</item>
         <item>Completed</item>
+    </string-array>
+
+    <string-array name="settings_item_array">
+        <item>Account Settings</item>
+
     </string-array>
 
 </resources>

@@ -7,11 +7,7 @@
       "expirationTime": 7,
       "keyDescription": ""
     },
-    "conflictResolution": {
-      "defaultResolutionStrategy": {
-        "type": "AUTOMERGE"
-      }
-    },
+    "conflictResolution": {},
     "apiName": "amplifyDatasource",
     "gqlSchemaPath": "/mnt/c/Users/Lenovo/Desktop/Advanced Java/Android/Labs/TaskMaster/amplify/backend/api/amplifyDatasource/schema.graphql"
   }

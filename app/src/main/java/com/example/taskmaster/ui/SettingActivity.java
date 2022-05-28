@@ -1,42 +1,51 @@
 package com.example.taskmaster.ui;
 
-import androidx.appcompat.app.AppCompatActivity;
-
+import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.text.TextUtils;
+import android.text.Html;
+import android.text.InputType;
 import android.util.Log;
 import android.view.View;
-import android.view.inputmethod.InputMethodManager;
+import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Spinner;
-import android.widget.Toast;
+import android.widget.ListView;
+import android.widget.TextView;
 
-import com.amplifyframework.datastore.generated.model.Team;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+
+import com.amplifyframework.core.Amplify;
+import com.example.taskmaster.Auth.EditUserDetailsActivity;
+import com.example.taskmaster.Auth.LoginActivity;
+import com.example.taskmaster.Auth.ResetPasswordActivity;
+import com.example.taskmaster.Auth.SignUpActivity;
 import com.example.taskmaster.R;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
-
+@SuppressLint("ResourceAsColor")
+@RequiresApi(api = Build.VERSION_CODES.N)
 public class SettingActivity extends AppCompatActivity {
 
-    public static final String USERNAME = "username";
     public static final String NO_OF_TASK_TO_SHOW = "No of Task to show";
     private static final String TAG = SettingActivity.class.getSimpleName();
-    public static final String USER_TEAM = "User Team";
-    private EditText mUsername;
-    private EditText mNoOfTaskToShow;
-    private Spinner selectTeamSpinner;
-    private Button saveUserButton;
-
+    public static final String ACTIVITY = "Activity";
+    private ListView listView;
+    private TextView textView;
+    private final String[] itemList = {"Edit Profile","Change password","Delete account",""};
+    private final String[] subItemsList = {"change name, and email"};
+    private String fullName;
+    private String email;
+    private String password;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -44,109 +53,154 @@ public class SettingActivity extends AppCompatActivity {
 
         findViewByIdMethod();
 
-        setAdapterToStatesTeamArraySpinner();
+        setUserWelcoming();
 
-        addBackButton();
+        getAllSharedPreferencesAsString();
 
-        saveUserButton.setOnClickListener(view -> saveButtonAction());
+        setListView();
     }
 
-    private void saveUser() {
-        String username = mUsername.getText().toString();
-        String NoOfTaskToShow = mNoOfTaskToShow.getText().toString();
-        String userTeam = selectTeamSpinner.getSelectedItem().toString();
 
-
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        SharedPreferences.Editor preferenceEditor = sharedPreferences.edit();
-
-        preferenceEditor.putString(USERNAME, username);
-        preferenceEditor.putString(NO_OF_TASK_TO_SHOW, NoOfTaskToShow);
-        preferenceEditor.putString(USER_TEAM, userTeam);
-        Log.i(TAG, "saveUser: userName is => " + username);
-        Log.i(TAG, "saveUser: userTeam is => " + userTeam);
-        preferenceEditor.apply();
-        backToMainActivity();
-    }
 
     public static String getDefaults(String key, Context context) {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
         return preferences.getString(key, null);
     }
 
-    public void backToMainActivity() {
-        finish();
-        startActivity(new Intent(this, MainActivity.class));
-    }
-
-    private void setAdapterToStatesTeamArraySpinner() {
-
-        /*
-        https://developer.android.com/guide/topics/ui/controls/spinner
-         */
-        List<String> teams = new ArrayList<>();
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            teams = SplashActivity.teamsList.stream().map(Team::getName).sorted().collect(Collectors.toList());
-        }
-
-        /*
-        https://www.codegrepper.com/code-examples/java/android+studio+how+to+fill+spinner
-         */
-        Spinner spinner = findViewById(R.id.task_team_spinner_setting);
-        // Create an ArrayAdapter using the string array and a default spinner layout
-        ArrayAdapter<String> adapter = new ArrayAdapter(this, android.R.layout.simple_spinner_item,
-                teams);
-        // Specify the layout to use when the list of choices appears
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        // Apply the adapter to the spinner
-        spinner.setAdapter(adapter);
-    }
-
-    private void saveButtonAction() {
-        if (TextUtils.isEmpty(mUsername.getText())) {
-            mUsername.setError("username is required");
-        } else {
-            saveUser();
-            disableTheTextEdit();
-            Toast.makeText(this, "Saved", Toast.LENGTH_SHORT).show();
-        }
-
-        View view2 = this.getCurrentFocus();
-        if (view2 != null) {
-            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-            imm.hideSoftInputFromWindow(view2.getWindowToken(), 0);
-        }
+    private void setUserWelcoming(){
+        textView.setText(getDefaults(SignUpActivity.FIRST_NAME,this) + " " + getDefaults(SignUpActivity.LAST_NAME,this));
     }
 
 
     private void findViewByIdMethod() {
 
-        mUsername = findViewById(R.id.edit_text_username);
-        mNoOfTaskToShow = findViewById(R.id.edit_text_no_of_task);
-        saveUserButton = findViewById(R.id.save_user_button);
-        selectTeamSpinner = findViewById(R.id.task_team_spinner_setting);
+        listView = findViewById(R.id.settings_list_views);
+        textView = findViewById(R.id.user_welcoming_settings);
 
     }
 
-    private void addBackButton() {
+
+    private void setListView(){
+
+        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_2, android.R.id.text1, itemList){
+
+            @NonNull
+            @Override
+            public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+                View view =  super.getView(position, convertView, parent);
+
+                TextView name = view.findViewById(android.R.id.text1);
+                TextView subItem = view.findViewById(android.R.id.text2);
+
+
+                /*
+                 * How to set the text style from java side
+                 * https://www.codegrepper.com/code-examples/whatever/make+text+bold+android+studio
+                 */
+                name.setTypeface(null, Typeface.BOLD);
+
+
+                name.setText(itemList[position]);
+                if (position==0) {
+                    subItem.setText(subItemsList[position]);
+                }
+
+                return view;
+            }
+        };
+
+
+
+        listView.setAdapter(arrayAdapter);
+        listView.setOnItemClickListener((adapterView, view, i, l) -> {
+
+            switch (i){
+                case 0:
+                    navigateToEditPage();
+                    break;
+                case 1:
+                    navigateToResetPasswordPage();
+                    break;
+                case 2:
+                    deleteAccountAlertDialog();
+                    break;
+                default:
+            }
+        });
+    }
+
+    private void navigateToEditPage(){
+
+        Intent intent = new Intent(this, EditUserDetailsActivity.class);
+        intent.putExtra(SignUpActivity.FIRST_NAME,fullName);
+        intent.putExtra(SignUpActivity.EMAIL,email);
+        intent.putExtra(SignUpActivity.PASSWORD,password);
+        startActivity(intent);
+
+    }
+    private void navigateToResetPasswordPage(){
+
+        Intent intent = new Intent(this, ResetPasswordActivity.class);
+        intent.putExtra(ACTIVITY,SettingActivity.class.getSimpleName());
+        intent.putExtra(SignUpActivity.PASSWORD,password);
+        startActivity(intent);
+    }
+    private void deleteAccount(){
+
+        Amplify.Auth.deleteUser(
+                () -> Log.i(TAG, "Delete user succeeded"),
+                error -> Log.e(TAG, "Delete user failed with error " + error.toString())
+        );
+    }
+
+    private void getAllSharedPreferencesAsString(){
+
+        fullName = getDefaults(SignUpActivity.FIRST_NAME,this);
+        email = getDefaults(SignUpActivity.EMAIL,this);
+        password = getDefaults(SignUpActivity.PASSWORD,this);
+    }
+
+    private void deleteAccountAlertDialog() {
         /*
-        https://www.youtube.com/watch?v=FcPUFp8Qrps&ab_channel=LemubitAcademy
-        In this video i learned how to add back button in action bar
+        https://stackoverflow.com/questions/33437398/how-to-change-textcolor-in-alertdialog
+        how to change the text color in alert dialog
         */
-        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
+        String random = randomString()+"";
+        AlertDialog.Builder alert = new AlertDialog.Builder(SettingActivity.this);
+        final EditText edittext = new EditText(this);
+        edittext.setInputType(InputType.TYPE_CLASS_NUMBER);
+        alert.setMessage("Are you sure to delete your account?\n\nEnter "+ random + " To confirm");
+        alert.setTitle(Html.fromHtml("<font color='#FF0000'>Warning!</font>"));
+
+        alert.setView(edittext);
+
+        alert.setPositiveButton(Html.fromHtml("<font color='#FF0000'>ok</font>"), new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                if (edittext.getText().toString().equals(random+"")){
+                    deleteAccount();
+                    navigateToLoginPage();
+                    finish();
+                }else {
+                    deleteAccountAlertDialog();
+                }
+            }
+        });
+
+        alert.setNegativeButton("cancel", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                onResume();
+            }
+        });
+
+        alert.show();
     }
 
-    private void disableTheTextEdit(){
-
-        mUsername.setEnabled(false);
-        selectTeamSpinner.setEnabled(false);
-
+    private void navigateToLoginPage(){
+        startActivity(new Intent(this, LoginActivity.class));
     }
 
-    private void enableTheTextEdit(){
-
-        mUsername.setEnabled(true);
-        selectTeamSpinner.setEnabled(true);
-
+    private int randomString(){
+        return (int)(Math.random() * (5000 - 2000) + 1) + 2000;
     }
+
 }

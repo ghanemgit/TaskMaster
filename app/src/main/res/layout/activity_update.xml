@@ -9,85 +9,99 @@
 
 
     <TextView
-        android:id="@+id/updateTaskTitle"
+        android:id="@+id/update_task_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:fontFamily="serif"
-        android:layout_marginStart="25dp"
-        android:layout_marginTop="50dp"
+        android:background="@drawable/rounded_edit_text_teal"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:gravity="center"
+        android:layout_marginTop="10dp"
         android:text="@string/update_task_title"
-        android:textColor="@color/black"
-        android:textSize="40sp" />
+        android:textColor="@color/white"
+        android:textSize="35sp" />
 
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/styled_update_task_title_box"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/update_task_title"
+        android:layout_width="match_parent">
 
     <EditText
-        android:id="@+id/updateTaskTitleBox"
+        android:id="@+id/update_task_title_box"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:backgroundTint="#3BACB6"
-        android:fontFamily="serif"
-        android:layout_below="@+id/updateTaskTitle"
-        android:layout_alignParentStart="true"
+        android:background="@drawable/rounded_edit_text_teal"
         android:layout_marginStart="15dp"
-        android:layout_marginTop="25dp"
-        android:autofillHints=""
+        android:layout_marginEnd="15dp"
+        android:layout_marginTop="20dp"
         android:hint="@string/task_title"
         android:inputType="textMultiLine" />
+    </com.google.android.material.textfield.TextInputLayout>
 
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/styled_update_task_description_box"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/styled_update_task_title_box"
+        android:layout_width="match_parent">
     <EditText
-        android:id="@+id/updateTaskDescriptionBox"
+        android:id="@+id/update_task_description_box"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:fontFamily="serif"
-        android:backgroundTint="#3BACB6"
-        android:layout_below="@+id/updateTaskTitleBox"
-        android:layout_alignParentStart="true"
+        android:background="@drawable/rounded_edit_text_teal"
         android:layout_marginStart="15dp"
-        android:layout_marginTop="25dp"
+        android:layout_marginEnd="15dp"
+        android:layout_marginTop="10dp"
         android:autofillHints=""
         android:hint="@string/task_description"
         android:inputType="textMultiLine" />
+    </com.google.android.material.textfield.TextInputLayout>
+
 
 
     <Spinner
         android:id="@+id/update_task_states_spinner"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:fontFamily="serif"
-        android:layout_below="@+id/updateTaskDescriptionBox"
-        android:layout_alignParentStart="true"
-        android:layout_marginStart="15dp"
-        android:layout_marginTop="50dp"
+        android:layout_width="200dp"
+        android:layout_height="50dp"
+        android:gravity="center_horizontal"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@+id/styled_update_task_description_box"
+        android:background="@drawable/rounded_edit_text_teal"
+        android:layout_marginTop="10dp"
         />
+
 
     <Spinner
         android:id="@+id/task_team_update_spinner"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_width="200dp"
+        android:layout_height="50dp"
+        android:layout_centerHorizontal="true"
+        android:layout_gravity="center_vertical"
         android:layout_below="@+id/update_task_states_spinner"
-        android:layout_marginStart="12dp"
-        android:layout_marginTop="40dp"
-        android:fontFamily="serif" />
+        android:background="@drawable/rounded_edit_text_teal"
+        android:layout_marginTop="10dp"
+        />
 
     <Button
-        android:id="@+id/updateTaskButton"
-        android:layout_width="110dp"
-        android:layout_height="47dp"
+        android:id="@+id/update_task_button"
+        android:layout_width="150dp"
+        android:layout_height="50dp"
         android:layout_below="@+id/task_team_update_spinner"
         android:layout_centerHorizontal="true"
-        android:fontFamily="serif"
         android:layout_marginTop="25dp"
         android:backgroundTint="@color/teal_700"
         android:text="Save" />
 
     <Button
         android:id="@+id/backToDescriptionPage"
-        android:layout_width="110dp"
-        android:layout_height="47dp"
-        android:fontFamily="serif"
-        android:layout_below="@+id/updateTaskButton"
+        android:layout_width="150dp"
+        android:layout_height="50dp"
+        android:layout_below="@+id/update_task_button"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="15dp"
+        android:layout_marginTop="10dp"
         android:backgroundTint="@color/teal_700"
         android:text="Cancel" />
 

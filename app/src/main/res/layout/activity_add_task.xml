@@ -9,94 +9,101 @@
 
 
     <TextView
-        android:id="@+id/addTaskTitle"
+        android:id="@+id/add_task_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="25dp"
-        android:fontFamily="serif"
-        android:layout_marginTop="20dp"
+        android:layout_marginStart="15dp"
+        android:layout_marginEnd="15dp"
+        android:gravity="center"
+        android:background="@drawable/rounded_edit_text_teal"
+        android:layout_marginTop="10dp"
         android:text="@string/addTaskB"
-        android:textColor="@color/black"
-        android:textSize="40sp" />
+        android:textColor="@color/white"
+        android:textSize="35sp" />
 
 
 
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/styled_add_task_title"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/add_task_title"
+        android:layout_width="match_parent">
 
     <EditText
         android:id="@+id/taskTitleBox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/addTaskTitle"
-        android:backgroundTint="#3BACB6"
-        android:layout_alignParentStart="true"
-        android:fontFamily="serif"
         android:layout_marginStart="15dp"
-        android:textColorHint="#3BACB6"
         android:layout_marginEnd="15dp"
+        android:background="@drawable/half_rounded_edit_text"
         android:layout_marginTop="40dp"
-        android:textColorHighlight="@color/teal_200"
-        android:autofillHints=""
         android:hint="@string/task_title"
         android:inputType="text" />
 
-    <EditText
-        android:id="@+id/taskDescriptionBox"
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/styled_task_description_box"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/styled_add_task_title"
+        android:layout_width="match_parent">
+
+        <EditText
+        android:id="@+id/task_description_box"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginEnd="15dp"
         android:layout_below="@+id/taskTitleBox"
-        android:backgroundTint="#3BACB6"
-        android:layout_alignParentStart="true"
-        android:fontFamily="serif"
+        android:background="@drawable/half_rounded_edit_text"
         android:layout_marginStart="15dp"
-        android:textColorHint="#3BACB6"
-        android:textColorHighlight="@color/teal_200"
-        android:layout_marginTop="40dp"
-        android:autofillHints=""
+        android:layout_marginTop="20dp"
         android:hint="@string/task_description"
         android:inputType="textMultiLine" />
 
+    </com.google.android.material.textfield.TextInputLayout>
 
     <Spinner
         android:id="@+id/task_states_spinner"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/taskDescriptionBox"
-        android:layout_alignParentStart="true"
+        android:layout_width="200dp"
+        android:layout_height="50dp"
+        android:background="@drawable/rounded_edit_text_teal"
+        android:layout_below="@+id/styled_task_description_box"
+        android:layout_centerHorizontal="true"
         android:layout_marginStart="15dp"
-        android:layout_marginTop="40dp"
-        android:fontFamily="serif" />
+        android:layout_marginTop="20dp"
+        />
 
 
     <Spinner
         android:id="@+id/task_team_spinner"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_width="200dp"
+        android:layout_height="50dp"
         android:layout_below="@+id/task_states_spinner"
+        android:layout_centerHorizontal="true"
+        android:background="@drawable/rounded_edit_text_teal"
         android:layout_marginStart="12dp"
-        android:layout_marginTop="40dp"
-        android:fontFamily="serif" />
+        android:layout_marginTop="20dp"
+        />
 
     <Button
-        android:id="@+id/createTaskButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:id="@+id/create_task_button"
+        android:layout_width="150dp"
+        android:layout_height="50dp"
         android:layout_below="@+id/task_team_spinner"
-        android:layout_marginTop="40dp"
+        android:layout_marginTop="30dp"
         android:layout_centerHorizontal="true"
         android:backgroundTint="#3BACB6"
         android:drawableLeft="@drawable/add_task_icon"
-        android:fontFamily="serif"
         android:text="@string/addTaskB"
-        android:textColor="@color/black" />
+        android:textColor="@color/white" />
 
     <TextView
-        android:id="@+id/tasksCount"
+        android:id="@+id/tasks_count"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/createTaskButton"
+        android:layout_below="@+id/create_task_button"
         android:layout_marginStart="20dp"
-        android:fontFamily="serif"
         android:layout_marginTop="25dp"
         android:textColor="@color/black"
         android:background="#F7FF93"

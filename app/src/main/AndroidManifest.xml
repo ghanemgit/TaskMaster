@@ -10,16 +10,40 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.TaskMaster">
         <activity
+            android:name=".LoadingDialogActivity"
+            android:exported="false" />
+        <activity
+            android:name=".Auth.EditUserDetailsActivity"
+            android:exported="false"
+            android:parentActivityName=".ui.TaskDetailsActivity" />
+        <activity
+            android:name=".Auth.VerificationCodeActivity"
+            android:exported="false" />
+        <activity
+            android:name=".Auth.ForgetPasswordActivity"
+            android:exported="false"
+            android:parentActivityName=".Auth.LoginActivity" />
+        <activity
+            android:name=".Auth.ResetPasswordActivity"
+            android:exported="false"
+            android:parentActivityName=".Auth.ForgetPasswordActivity" />
+        <activity
+            android:name=".Auth.SignUpActivity"
+            android:exported="false"
+            android:parentActivityName=".Auth.LoginActivity" />
+        <activity
+            android:name=".Auth.LoginActivity"
+            android:exported="false" />
+        <activity
             android:name=".ui.SplashActivity"
-            android:theme="@style/SplashTheme"
-            android:exported="true">
+            android:exported="true"
+            android:theme="@style/SplashTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity
             android:name=".ui.UpdateActivity"
             android:exported="false"
@@ -49,9 +73,7 @@
             android:parentActivityName=".ui.MainActivity" />
         <activity
             android:name=".ui.MainActivity"
-            android:exported="true">
-
-        </activity>
+            android:exported="true" />
     </application>
 
 </manifest>

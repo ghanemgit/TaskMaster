@@ -1,75 +1,54 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
     tools:context=".ui.SettingActivity">
 
 
-    <EditText
-        android:id="@+id/edit_text_username"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:fontFamily="serif"
-        android:layout_marginTop="100dp"
-        android:autofillHints=""
-        android:backgroundTint="#3BACB6"
-        android:textColorHint="#3BACB6"
-        android:textColorHighlight="@color/teal_200"
-        android:layout_marginEnd="25dp"
-        android:layout_marginStart="25dp"
-        android:hint="@string/edit_text_username"
-        android:inputType="text"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
 
-    <EditText
-        android:id="@+id/edit_text_no_of_task"
-        android:layout_width="match_parent"
+        <TextView
+            android:id="@+id/user_welcoming_settings"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:drawableLeft="@mipmap/user_image_drawable"
+            android:fontFamily="serif"
+            android:text="Guest"
+            android:layout_marginTop="10dp"
+            android:layout_marginStart="10dp"
+            android:textSize="25sp"
+            android:gravity="center_vertical"
+            android:textColor="@color/black"
+            />
+
+
+
+
+    <TextView
+        android:id="@+id/item_name"
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="25dp"
-        android:layout_marginStart="25dp"
-        android:backgroundTint="#3BACB6"
-        android:textColorHint="#3BACB6"
-        android:textColorHighlight="@color/teal_200"
-        android:fontFamily="serif"
-        app:layout_constraintTop_toBottomOf="@+id/edit_text_username"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:autofillHints=""
-        android:hint="@string/edit_text_password"
-        android:inputType="number"
-        android:layout_marginTop="30dp"
+        android:layout_gravity="center"
+        android:textColor="@color/black" />
+
+    <TextView
+        android:id="@+id/item_details"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:textColor="@color/black" />
+
+
+    <ListView
+        android:id="@+id/settings_list_views"
+        android:layout_width="match_parent"
+        android:layout_marginTop="-30dp"
+        android:layout_height="wrap_content"
+        android:divider="@color/red"
+        android:dividerHeight="1dp"
         />
 
-    <Spinner
-        android:id="@+id/task_team_spinner_setting"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="30dp"
-        android:layout_marginStart="50dp"
-        android:layout_marginEnd="50dp"
-        android:layout_below="@+id/edit_text_no_of_task"
-        android:fontFamily="serif"
-        app:layout_constraintTop_toBottomOf="@+id/edit_text_no_of_task"
-        tools:layout_editor_absoluteX="16dp" />
-
-    <Button
-        android:id="@+id/save_user_button"
-        android:layout_width="200dp"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/edit_text_no_of_task"
-        android:layout_marginTop="40dp"
-        android:backgroundTint="@color/teal_700"
-        android:fontFamily="serif"
-        android:text="@string/save_username_password"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.497"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/task_team_spinner_setting" />
 
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+</LinearLayout>
