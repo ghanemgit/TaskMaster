@@ -20,13 +20,13 @@ import com.amplifyframework.api.graphql.model.ModelMutation;
 import com.amplifyframework.core.Amplify;
 import com.amplifyframework.core.model.query.Where;
 import com.amplifyframework.datastore.generated.model.Task;
-import com.bumptech.glide.Glide;
 import com.example.taskmaster.R;
 
 import java.io.File;
 import java.util.Objects;
 import java.util.stream.Collectors;
 @RequiresApi(api = Build.VERSION_CODES.N)
+@SuppressLint("SetTextI18n")
 public class TaskDetailsActivity extends AppCompatActivity {
 
     private static final String TAG = TaskDetailsActivity.class.getSimpleName();
@@ -51,17 +51,15 @@ public class TaskDetailsActivity extends AppCompatActivity {
 
         loadTaskInfoFromMain();
 
-        imageDownload();
-
         setTextForTaskView();
 
         editButton.setOnClickListener(view -> editTask());
 
         deleteButton.setOnClickListener(view -> deleteTaskButtonAction());
 
+        imageDownload();
+
         showTheImageInThePage();
-
-
     }
 
     public void setActionBarTitleButton(String title) {
@@ -97,17 +95,13 @@ public class TaskDetailsActivity extends AppCompatActivity {
             Task finalCurrentTask = currentTask;
 
             teamName = SplashActivity.teamsList.stream().filter(team1 -> team1.getId().equals(finalCurrentTask.getTeamTasksId())).collect(Collectors.toList()).get(0).getName();
-
     }
 
 
-    @SuppressLint({"SetTextI18n", "SdCardPath"})
     private void showTheImageInThePage(){
 
-//        downloadedImagePath = "/data/data/com.example.taskmaster/files/"+currentTask.getTaskImageCode().toLowerCase()+".jpg";
-//        Log.i(TAG, "The downloaded image path is -> "+downloadedImagePath);
-//        Bitmap bMap = BitmapFactory.decodeFile(downloadedImagePath);
-//        taskImageView.setImageBitmap(bMap);
+        Bitmap bMap = BitmapFactory.decodeFile(downloadedImagePath+currentTask.getTaskImageCode()+".jpg");
+        taskImageView.setImageBitmap(bMap);
     }
 
 
@@ -172,16 +166,18 @@ public class TaskDetailsActivity extends AppCompatActivity {
     }
 
 
+    @SuppressLint("SdCardPath")
     private void imageDownload() {
-        downloadedImagePath = getApplicationContext().getFilesDir() + "/"+currentTask.getTaskImageCode()+".jpg";
-        System.out.println("The path from the details is -> "+downloadedImagePath);
+        downloadedImagePath = "/data/data/com.example.taskmaster/files/";
+
         Amplify.Storage.downloadFile(
                 currentTask.getTaskImageCode(),
                 new File(downloadedImagePath),
                 result -> {
                     Log.i(TAG, "The root path is: " + getApplicationContext().getFilesDir());
                     Log.i(TAG, "Successfully downloaded: " + result.getFile().getName());
-                    Glide.with(this).load(result.getFile().getPath()).into(taskImageView);
+
+                    downloadedImagePath = result.getFile().getPath();
                 },
                 error -> Log.e(TAG,  "Download Failure", error)
         );
