@@ -1,10 +1,14 @@
 package com.example.taskmaster.ui;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -16,20 +20,21 @@ import com.amplifyframework.api.graphql.model.ModelMutation;
 import com.amplifyframework.core.Amplify;
 import com.amplifyframework.core.model.query.Where;
 import com.amplifyframework.datastore.generated.model.Task;
+import com.bumptech.glide.Glide;
 import com.example.taskmaster.R;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.io.File;
 import java.util.Objects;
 import java.util.stream.Collectors;
 @RequiresApi(api = Build.VERSION_CODES.N)
 public class TaskDetailsActivity extends AppCompatActivity {
 
     private static final String TAG = TaskDetailsActivity.class.getSimpleName();
+    private ImageView taskImageView;
     private Task currentTask = null;
-    public static List<Task> tempTask = new ArrayList<>();
     private Task taskFromAddTaskPage=null;
     private String teamName = "";
+    private String downloadedImagePath;
     private TextView state;
     private TextView body;
     private TextView team;
@@ -46,11 +51,17 @@ public class TaskDetailsActivity extends AppCompatActivity {
 
         loadTaskInfoFromMain();
 
+        imageDownload();
+
         setTextForTaskView();
 
         editButton.setOnClickListener(view -> editTask());
 
         deleteButton.setOnClickListener(view -> deleteTaskButtonAction());
+
+        showTheImageInThePage();
+
+
     }
 
     public void setActionBarTitleButton(String title) {
@@ -75,6 +86,7 @@ public class TaskDetailsActivity extends AppCompatActivity {
         team = findViewById(R.id.task_team_in_details_page);
         deleteButton = findViewById(R.id.delete_button);
         editButton = findViewById(R.id.edit_button);
+        taskImageView = findViewById(R.id.task_image);
     }
 
     private void loadTaskInfoFromMain() {
@@ -89,6 +101,14 @@ public class TaskDetailsActivity extends AppCompatActivity {
     }
 
 
+    @SuppressLint({"SetTextI18n", "SdCardPath"})
+    private void showTheImageInThePage(){
+
+//        downloadedImagePath = "/data/data/com.example.taskmaster/files/"+currentTask.getTaskImageCode().toLowerCase()+".jpg";
+//        Log.i(TAG, "The downloaded image path is -> "+downloadedImagePath);
+//        Bitmap bMap = BitmapFactory.decodeFile(downloadedImagePath);
+//        taskImageView.setImageBitmap(bMap);
+    }
 
 
     private void setTextForTaskView() {
@@ -146,11 +166,24 @@ public class TaskDetailsActivity extends AppCompatActivity {
 
     public void editTask() {
 
-
         Intent intent = new Intent(TaskDetailsActivity.this, UpdateActivity.class);
         intent.putExtra("Id", currentTask.getId());
         startActivity(intent);
+    }
 
 
+    private void imageDownload() {
+        downloadedImagePath = getApplicationContext().getFilesDir() + "/"+currentTask.getTaskImageCode()+".jpg";
+        System.out.println("The path from the details is -> "+downloadedImagePath);
+        Amplify.Storage.downloadFile(
+                currentTask.getTaskImageCode(),
+                new File(downloadedImagePath),
+                result -> {
+                    Log.i(TAG, "The root path is: " + getApplicationContext().getFilesDir());
+                    Log.i(TAG, "Successfully downloaded: " + result.getFile().getName());
+                    Glide.with(this).load(result.getFile().getPath()).into(taskImageView);
+                },
+                error -> Log.e(TAG,  "Download Failure", error)
+        );
     }
 }

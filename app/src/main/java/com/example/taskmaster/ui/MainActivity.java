@@ -2,12 +2,10 @@ package com.example.taskmaster.ui;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
 import android.util.Log;
@@ -31,8 +29,8 @@ import androidx.core.view.MenuCompat;
 import com.amplifyframework.core.Amplify;
 import com.amplifyframework.datastore.generated.model.Task;
 import com.example.taskmaster.Auth.LoginActivity;
-import com.example.taskmaster.Auth.SignUpActivity;
 import com.example.taskmaster.R;
+import com.example.taskmaster.data.UserInfo;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
@@ -51,7 +49,6 @@ public class MainActivity extends AppCompatActivity {
     private String theUserTeamId = "";
     private String selectedItem = "";
     private LoadingDialog loadingDialog;
-    private TextView loadingText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,10 +59,10 @@ public class MainActivity extends AppCompatActivity {
 
         findAllViewsById();
 
-        showSharedPreferencesInfo();
+        showUserNameOrTeam();
 
         setTheUserTeamString();
-
+        System.out.println("The user team from the main activity is -> "+theUserTeamString);
         //set adapter for filter tasks spinner
         setAdapterToStatesTaskArraySpinner();
 
@@ -95,7 +92,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        showSharedPreferencesInfo();
+        showUserNameOrTeam();
         Log.i(TAG, "onResume: called");
     }
 
@@ -170,28 +167,27 @@ public class MainActivity extends AppCompatActivity {
 
     private void navigateToSetting() {
         overridePendingTransition(0, 0);
-        startActivity(new Intent(this, SettingActivity.class));
+        Intent intent = new Intent(this,SettingActivity.class);
+        intent.putExtra("tasksListSize",tasksList.size());
+        startActivity(intent);
         overridePendingTransition(0, 0);
     }
 
     //Set up the username details to show it in the home screen
-    private void showSharedPreferencesInfo() {
+    private void showUserNameOrTeam() {
 
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        usernameWelcoming.setText(UserInfo.firstName+" "+UserInfo.lastName+" Tasks");
 
-        usernameWelcoming.setText(sharedPreferences.getString(SignUpActivity.FIRST_NAME, "Guest")+" Tasks");
-
-        usernameWelcoming.setText(sharedPreferences.getString(SignUpActivity.USER_TEAM,null) +" Tasks");
+        usernameWelcoming.setText(UserInfo.userTeam +" Tasks");
     }
 
     private void initializeData() {
+
 
         theUserTeamId = SplashActivity.teamsList.stream().filter(team ->
                 team.getName().equals(theUserTeamString)).collect(Collectors.toList()).get(0).getId();
         tasksList = tasksList.stream().filter(task -> task.getTeamTasksId().equals(theUserTeamId)).collect(Collectors.toList());
 
-        System.out.println("The user team stirng is  => "+theUserTeamString);
-        System.out.println("The size of tasks list from the main activity is => "+tasksList.size());
 
         switch (selectedItem) {
             case "New":
@@ -241,7 +237,6 @@ public class MainActivity extends AppCompatActivity {
         listViewTasksList.setOnItemClickListener((adapterView, view, i, l) -> {
             Intent intent = new Intent(getApplicationContext(), TaskDetailsActivity.class);
             intent.putExtra("Position", tasksList.get(i).getId());
-            System.out.println("The task from the onitemclicklistener is "+tasksList.get(i).getTitle());
             startActivity(intent);
         });
     }
@@ -298,11 +293,12 @@ public class MainActivity extends AppCompatActivity {
         floatAddTaskButton = findViewById(R.id.add_task_button_floating);
         loadingDialog = new LoadingDialog(MainActivity.this);
 
-        loadingText = findViewById(R.id.text_view_in_loading_progress);
+        TextView loadingText = findViewById(R.id.text_view_in_loading_progress);
     }
 
     private void setTheUserTeamString(){
-       theUserTeamString =  SettingActivity.getDefaults(SignUpActivity.USER_TEAM,this);
+       theUserTeamString =  UserInfo.userTeam;
+        System.out.println("The user team after set is -> "+theUserTeamString);
     }
 
 
@@ -320,5 +316,6 @@ public class MainActivity extends AppCompatActivity {
                 }
         );
     }
+
 
 }

@@ -23,6 +23,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.amplifyframework.auth.options.AuthSignOutOptions;
 import com.amplifyframework.core.Amplify;
 import com.example.taskmaster.R;
+import com.example.taskmaster.data.UserInfo;
 import com.example.taskmaster.ui.LoadingDialog;
 import com.example.taskmaster.ui.SettingActivity;
 import com.google.android.material.textfield.TextInputLayout;
@@ -42,6 +43,7 @@ public class ResetPasswordActivity extends AppCompatActivity {
     private boolean isFromSettingsActivity;
     private String confirmNewPasswordString;
     private String currentPassword;
+    private String currentEmail;
     private String verificationCodeString;
     private LoadingDialog loadingDialog;
 
@@ -86,6 +88,7 @@ public class ResetPasswordActivity extends AppCompatActivity {
         resetPasswordBtn = findViewById(R.id.password_reset_button);
         TextInputLayout textInputLayout = findViewById(R.id.styled_edit_text_verification_code);
         loadingDialog = new LoadingDialog(ResetPasswordActivity.this);
+        currentEmail = getIntent().getStringExtra(UserInfo.EMAIL);
 
         if (isFromSettingsActivity) {
             textInputLayout.setHint("Current password");
@@ -144,7 +147,7 @@ public class ResetPasswordActivity extends AppCompatActivity {
             newPassword.setError("Password not Edited");
 
         }else if (!isFromSettingsActivity) {
-
+            showLoadingDialog();
             Amplify.Auth.confirmResetPassword(
                     newPasswordString,
                     verificationCodeString,
@@ -154,19 +157,19 @@ public class ResetPasswordActivity extends AppCompatActivity {
                         if (signOutFromAllDevicesCheckbox.isChecked()) {
                             signOutFromAllDevices();
                         }
-                        loadingDialog.startLoadingDialog();
                         signOut();
                     },
                     error -> {
                         Log.e(TAG, error.toString());
                         runOnUiThread(() -> {
+                            loadingDialog.dismissLoadingDialog();
                             Toast.makeText(this, "Change can't complete something went wrong", Toast.LENGTH_SHORT).show();
                             onResume();
                         });
                     }
             );
         } else {
-
+            showLoadingDialog();
             /*
             The verification code here is current password in case the user are
             already signed in and he want to change his\her password
@@ -179,12 +182,12 @@ public class ResetPasswordActivity extends AppCompatActivity {
                         if (signOutFromAllDevicesCheckbox.isChecked()) {
                             signOutFromAllDevices();
                         }
-                        loadingDialog.startLoadingDialog();
                         signOut();
                     },
                     failure -> {
                         Log.i(TAG, "Password not Updated " +failure.toString());
                         runOnUiThread(() -> {
+                            loadingDialog.dismissLoadingDialog();
                             Toast.makeText(this, "Change can't complete something went wrong", Toast.LENGTH_SHORT).show();
                             onResume();
                         });
@@ -198,8 +201,8 @@ public class ResetPasswordActivity extends AppCompatActivity {
     }
 
     private void navigateToLoginPage() {
-        startActivity(new Intent(this, LoginActivity.class));
         loadingDialog.dismissLoadingDialog();
+        startActivity(new Intent(this, LoginActivity.class));
         finish();
     }
 
@@ -213,7 +216,7 @@ public class ResetPasswordActivity extends AppCompatActivity {
     private void checkFromAnyActivity() {
 
         isFromSettingsActivity = Objects.equals(getIntent().getStringExtra(SettingActivity.ACTIVITY), SettingActivity.class.getSimpleName());
-        currentPassword = SettingActivity.getDefaults(SignUpActivity.PASSWORD, this);
+        currentPassword = UserInfo.getDefaults(UserInfo.email, this);
     }
 
 
@@ -222,7 +225,7 @@ public class ResetPasswordActivity extends AppCompatActivity {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         SharedPreferences.Editor preferenceEditor = sharedPreferences.edit();
 
-        preferenceEditor.putString(SignUpActivity.PASSWORD,newPasswordString);
+        preferenceEditor.putString(currentEmail,newPasswordString);
         preferenceEditor.apply();
     }
 
@@ -248,8 +251,13 @@ public class ResetPasswordActivity extends AppCompatActivity {
                     runOnUiThread(() -> {
                         loadingDialog.dismissLoadingDialog();
                         Toast.makeText(this, "Something went wrong", Toast.LENGTH_SHORT).show();
+                        onResume();
                     });
                 }
         );
+    }
+
+    private void showLoadingDialog(){
+        loadingDialog.startLoadingDialog();
     }
 }

@@ -27,6 +27,7 @@ import com.amplifyframework.core.Amplify;
 import com.amplifyframework.datastore.generated.model.Task;
 import com.amplifyframework.datastore.generated.model.Team;
 import com.example.taskmaster.R;
+import com.example.taskmaster.data.UserInfo;
 import com.example.taskmaster.ui.LoadingDialog;
 import com.example.taskmaster.ui.MainActivity;
 import com.example.taskmaster.ui.SettingActivity;
@@ -63,11 +64,23 @@ public class EditUserDetailsActivity extends AppCompatActivity {
         setUserInfoByUsingIntentToEnableEdit();
         buttonsAction();
 
+
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
     }
 
     private void findAllViewById() {
@@ -80,9 +93,9 @@ public class EditUserDetailsActivity extends AppCompatActivity {
 
     private void initializeAllString() {
 
-        currentFirstName = SettingActivity.getDefaults(SignUpActivity.FIRST_NAME, this);
-        currentLastName = SettingActivity.getDefaults(SignUpActivity.LAST_NAME, this);
-        currentTeam = SettingActivity.getDefaults(SignUpActivity.USER_TEAM, this);
+        currentFirstName = UserInfo.firstName;
+        currentLastName = UserInfo.lastName;
+        currentTeam = UserInfo.userTeam;
     }
 
     private void setAdapterToStatesTeamArraySpinner() {
@@ -116,7 +129,6 @@ public class EditUserDetailsActivity extends AppCompatActivity {
     private void buttonsAction() {
 
         editBtn.setOnClickListener(view -> {
-            loadingDialog.startLoadingDialog();
             getAllAsStrings();
             fetchTasksDataFromAPI();
             editButtonAction();
@@ -142,6 +154,7 @@ public class EditUserDetailsActivity extends AppCompatActivity {
         } else if (TextUtils.isEmpty(editLastNameSignup.getText())) {
             editLastNameSignup.setError("Enter a last name");
         } else {
+            loadingDialog.startLoadingDialog();
             update();
         }
 
@@ -173,34 +186,31 @@ public class EditUserDetailsActivity extends AppCompatActivity {
         ArrayList<AuthUserAttribute> attributes = new ArrayList<>();
         attributes.add(new AuthUserAttribute(AuthUserAttributeKey.name(), firstNameEditString));
         attributes.add(new AuthUserAttribute(AuthUserAttributeKey.familyName(), lastNameEditString));
+        attributes.add(new AuthUserAttribute(AuthUserAttributeKey.custom("custom:user_team"), selectedItemSpinnerString));
+
+        Log.i(TAG, "First NAme: "+firstNameEditString);
+        Log.i(TAG, "Last NAme: "+lastNameEditString);
+        Log.i(TAG, "Team NAme: "+selectedItemSpinnerString);
+
+
 
         Amplify.Auth.updateUserAttributes(
                 attributes,
                 result -> {
                     Log.i(TAG, "Result: " + result);
-                    updateDataInSharedPreferences();
-                    navigateToSettingsActivity();
+                    sendInfoToUserInfoClass();
+                    UserInfo.saveOtherUserInfoToSharedPreferences(this);
+                    runOnUiThread(this::navigateToSettingsActivity);
                 },
                 error -> {
                     Log.e(TAG, "update failed", error);
                     runOnUiThread(() -> {
+                        loadingDialog.dismissLoadingDialog();
                         Toast.makeText(this, "Edit can't complete something went wrong", Toast.LENGTH_SHORT).show();
                         onResume();
                     });
                 }
         );
-    }
-
-    private void updateDataInSharedPreferences(){
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        SharedPreferences.Editor preferenceEditor = sharedPreferences.edit();
-
-        preferenceEditor.putString(SignUpActivity.FIRST_NAME,firstNameEditString);
-        preferenceEditor.apply();
-        preferenceEditor.putString(SignUpActivity.LAST_NAME, lastNameEditString);
-        preferenceEditor.apply();
-        preferenceEditor.putString(SignUpActivity.USER_TEAM, selectedItemSpinnerString);
-        preferenceEditor.apply();
     }
 
     private void fetchTasksDataFromAPI() {
@@ -225,6 +235,13 @@ public class EditUserDetailsActivity extends AppCompatActivity {
         startActivity(new Intent(this, SettingActivity.class));
         loadingDialog.dismissLoadingDialog();
         finish();
+    }
+
+    private void sendInfoToUserInfoClass() {
+
+        UserInfo.firstName = firstNameEditString;
+        UserInfo.lastName = lastNameEditString;
+        UserInfo.userTeam = selectedItemSpinnerString;
     }
 
 }

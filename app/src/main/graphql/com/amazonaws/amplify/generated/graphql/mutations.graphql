@@ -8,6 +8,7 @@ mutation CreateTask(
     title
     description
     status
+    taskImageCode
     createdAt
     updatedAt
     _version
@@ -25,6 +26,7 @@ mutation UpdateTask(
     title
     description
     status
+    taskImageCode
     createdAt
     updatedAt
     _version
@@ -42,6 +44,7 @@ mutation DeleteTask(
     title
     description
     status
+    taskImageCode
     createdAt
     updatedAt
     _version
@@ -105,6 +108,7 @@ mutation CreateTeam(
         title
         description
         status
+        taskImageCode
         createdAt
         updatedAt
         _version
@@ -135,6 +139,7 @@ mutation UpdateTeam(
         title
         description
         status
+        taskImageCode
         createdAt
         updatedAt
         _version
@@ -165,6 +170,7 @@ mutation DeleteTeam(
         title
         description
         status
+        taskImageCode
         createdAt
         updatedAt
         _version

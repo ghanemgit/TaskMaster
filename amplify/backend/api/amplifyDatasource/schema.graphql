@@ -5,6 +5,7 @@ type Task @model {
   title: String!
   description: String
   status: String
+  taskImageCode : String
 }
 type Note @model {
   id: ID! @primaryKey

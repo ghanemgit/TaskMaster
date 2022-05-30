@@ -17,7 +17,7 @@ how to make a progress alert while doing things need to some time like login pro
 */
 public class LoadingDialog {
 
-    private Activity activity;
+    private final Activity activity;
     private AlertDialog alertDialog;
 
     public LoadingDialog(Activity activity) {

@@ -3,8 +3,11 @@ package com.example.taskmaster.Auth;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
@@ -18,11 +21,16 @@ import android.widget.Toast;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.amplifyframework.auth.AuthUserAttribute;
 import com.amplifyframework.core.Amplify;
 import com.example.taskmaster.R;
+import com.example.taskmaster.data.UserInfo;
 import com.example.taskmaster.ui.LoadingDialog;
 import com.example.taskmaster.ui.MainActivity;
 import com.example.taskmaster.ui.SplashActivity;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @RequiresApi(api = Build.VERSION_CODES.N)
 @SuppressLint("SetTextI18n")
@@ -38,7 +46,6 @@ public class LoginActivity extends AppCompatActivity {
     private String emailString;
     private String passwordString;
     private LoadingDialog loadingDialog;
-
 
 
     @Override
@@ -71,6 +78,10 @@ public class LoginActivity extends AppCompatActivity {
         super.onStop();
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+    }
 
     private void findAllViewById() {
         email = findViewById(R.id.email_box);
@@ -110,16 +121,27 @@ public class LoginActivity extends AppCompatActivity {
                 passwordString,
                 result -> {
                     Log.i(TAG, result.isSignInComplete() ? "Sign in succeeded" : "Sign in not complete");
-                    if (deviceRememberCheckBox.isChecked()) {
-                        rememberDevice();
+                    if (result.isSignInComplete()){
+                        fetchCurrentUserAttributes();
+                        if (deviceRememberCheckBox.isChecked()) {
+                            rememberDevice();
+                        }
+                        savePasswordSharedPreferences();
+                        runOnUiThread(this::navigateToMainActivity);
+                    }else {
+                        runOnUiThread(() -> {
+                            dismissDialog();
+                            Toast.makeText(LoginActivity.this, "Something went wrong!", Toast.LENGTH_SHORT).show();
+                            onResume();
+                        });
+
                     }
-                    fetchCurrentUserAttributes();
-                    navigateToMainActivity();
+
                 },
                 error -> {
                     Log.e(TAG, error.toString());
                     runOnUiThread(() -> {
-                        loadingDialog.dismissLoadingDialog();
+                        dismissDialog();
                         Toast.makeText(this, "username or Password Incorrect", Toast.LENGTH_SHORT).show();
                         onResume();
                     });
@@ -131,9 +153,7 @@ public class LoginActivity extends AppCompatActivity {
     private void buttonsAction() {
 
         signupBtn.setOnClickListener(view -> {
-            loadingDialog.startLoadingDialog();
             startActivity(new Intent(this, SignUpActivity.class));
-            loadingDialog.dismissLoadingDialog();
         });
 
         loginBtn.setOnClickListener(view -> {
@@ -142,13 +162,9 @@ public class LoginActivity extends AppCompatActivity {
         });
 
         forgetPassword.setOnClickListener(view -> {
-            loadingDialog.startLoadingDialog();
             startActivity(new Intent(this, ForgetPasswordActivity.class));
-            loadingDialog.dismissLoadingDialog();
-
         });
     }
-
 
 
     private void getAllAsString() {
@@ -157,41 +173,63 @@ public class LoginActivity extends AppCompatActivity {
         passwordString = password.getText().toString().trim();
     }
 
-    private void rememberDevice(){
+    private void rememberDevice() {
         Amplify.Auth.rememberDevice(
                 () -> Log.i(TAG, "Remember device succeeded"),
                 error -> Log.e(TAG, "Remember device failed with error " + error)
         );
     }
 
-    private void fetchCurrentUserAttributes(){
+    private void fetchCurrentUserAttributes() {
 
         Amplify.Auth.fetchUserAttributes(
                 attributes -> {
                     Log.i(TAG, "User attributes = " + attributes);
-                    SplashActivity.userAttributes = attributes;
+                    sendInfoToUserInfoClass(attributes);
+                    UserInfo.saveOtherUserInfoToSharedPreferences(this);
                 },
                 error -> Log.e(TAG, "Failed to fetch user attributes.", error)
         );
     }
 
     private void navigateToMainActivity() {
-        startActivity(new Intent(this, MainActivity.class));
-        dismissDialog();
-        finish();
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                dismissDialog();
+                startActivity(new Intent(LoginActivity.this, MainActivity.class));
+                finish();
+            }
+        }, 1500);
+
     }
 
-    private void runProgressDialog(){
-
-
+    private void runProgressDialog() {
         loadingDialog.startLoadingDialog();
-
     }
 
-    private void dismissDialog(){
+    private void dismissDialog() {
 
         loadingDialog.dismissLoadingDialog();
     }
 
+    private void savePasswordSharedPreferences() {
 
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences.Editor preferenceEditor = sharedPreferences.edit();
+
+        preferenceEditor.putString(emailString, passwordString);
+        preferenceEditor.apply();
+    }
+
+
+    private void sendInfoToUserInfoClass(List<AuthUserAttribute> userAttributesParam) {
+
+        Log.i(TAG, "The user team from attributes para in login page is : " + userAttributesParam.get(0).getValue());
+        UserInfo.firstName = userAttributesParam.get(3).getValue();
+        UserInfo.lastName = userAttributesParam.get(4).getValue();
+        UserInfo.email = userAttributesParam.get(5).getValue();
+        UserInfo.userTeam = userAttributesParam.get(0).getValue();
+        UserInfo.saveOtherUserInfoToSharedPreferences(this);
+    }
 }

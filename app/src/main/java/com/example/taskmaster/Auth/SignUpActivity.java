@@ -28,6 +28,7 @@ import com.amplifyframework.core.Amplify;
 import com.amplifyframework.datastore.generated.model.Team;
 import com.example.taskmaster.R;
 import com.example.taskmaster.ui.LoadingDialog;
+import com.example.taskmaster.ui.MainActivity;
 import com.example.taskmaster.ui.SplashActivity;
 
 import java.util.ArrayList;
@@ -39,11 +40,7 @@ import java.util.stream.Collectors;
 public class SignUpActivity extends AppCompatActivity {
 
     private static final String TAG = SignUpActivity.class.getSimpleName();
-    public static final String EMAIL = "email";
-    public static final String FIRST_NAME = "first name";
-    public static final String USER_TEAM = "User Team";
-    public static final String PASSWORD = "Password";
-    public static final String LAST_NAME = "last name";
+
     private static EditText firstNameSignup;
     private static EditText lastNameSignup;
     private static EditText emailSignup;
@@ -88,6 +85,11 @@ public class SignUpActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
         super.onStop();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
     }
 
     private void findAllViewById() {
@@ -143,6 +145,8 @@ public class SignUpActivity extends AppCompatActivity {
         attributes.add(new AuthUserAttribute(AuthUserAttributeKey.email(), emailSignupString));
         attributes.add(new AuthUserAttribute(AuthUserAttributeKey.name(), firstNameSignupString));
         attributes.add(new AuthUserAttribute(AuthUserAttributeKey.familyName(), lastNameSignupString));
+        attributes.add(new AuthUserAttribute(AuthUserAttributeKey.custom("custom:user_team"), selectedItemSpinnerString));
+
 
 
         Amplify.Auth.signUp(
@@ -152,8 +156,7 @@ public class SignUpActivity extends AppCompatActivity {
                 result -> {
                     Log.i(TAG, "Result: " + result);
                     runOnUiThread(() -> {
-                        loadingDialog.startLoadingDialog();
-                        saveOtherUserInfoToSharedPreferences();
+                        savePasswordSharedPreferences();
                         navigateToVerificationActivity();
                     });
 
@@ -161,7 +164,6 @@ public class SignUpActivity extends AppCompatActivity {
                 error -> {
                     Log.e(TAG, "Sign up failed", error);
                     runOnUiThread(() -> {
-                        loadingDialog.dismissLoadingDialog();
                         Toast.makeText(this, "Signup can't complete something went wrong", Toast.LENGTH_SHORT).show();
                         onResume();
                     });
@@ -172,9 +174,9 @@ public class SignUpActivity extends AppCompatActivity {
 
     private void navigateToVerificationActivity() {
         Intent intent = new Intent(this, VerificationCodeActivity.class);
-        intent.putExtra(EMAIL, emailSignupString);
-        startActivity(intent);
+        intent.putExtra("emailFromSignUp", emailSignupString);
         loadingDialog.dismissLoadingDialog();
+        startActivity(intent);
         finish();
     }
 
@@ -187,20 +189,12 @@ public class SignUpActivity extends AppCompatActivity {
     }
 
 
-    private void saveOtherUserInfoToSharedPreferences() {
+    private void savePasswordSharedPreferences() {
 
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         SharedPreferences.Editor preferenceEditor = sharedPreferences.edit();
 
-        preferenceEditor.putString(FIRST_NAME, firstNameSignupString);
-        preferenceEditor.apply();
-        preferenceEditor.putString(LAST_NAME, lastNameSignupString);
-        preferenceEditor.apply();
-        preferenceEditor.putString(EMAIL, emailSignupString);
-        preferenceEditor.apply();
-        preferenceEditor.putString(USER_TEAM, selectedItemSpinnerString);
-        preferenceEditor.apply();
-        preferenceEditor.putString(PASSWORD, passwordSignupString);
+        preferenceEditor.putString(emailSignupString, passwordSignupString);
         preferenceEditor.apply();
     }
 
@@ -224,7 +218,4 @@ public class SignUpActivity extends AppCompatActivity {
         // Apply the adapter to the spinner
         selectTeamSpinner.setAdapter(adapter);
     }
-
-
-
 }

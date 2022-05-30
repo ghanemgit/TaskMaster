@@ -45,5 +45,12 @@
         ]
       }
     }
+  },
+  "storage": {
+    "s3a42769a3": {
+      "service": "S3",
+      "providerPlugin": "awscloudformation",
+      "dependsOn": []
+    }
   }
 }

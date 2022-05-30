@@ -67,7 +67,7 @@ public class VerificationCodeActivity extends AppCompatActivity {
                     {
                         runOnUiThread(() -> {
                             loadingDialog.dismissLoadingDialog();
-                            Toast.makeText(this, "Something went wrong", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(this, "Wrong verification code", Toast.LENGTH_SHORT).show();
                         });
                         Log.e(TAG, "Check error => "+error);
                     }
@@ -77,6 +77,6 @@ public class VerificationCodeActivity extends AppCompatActivity {
 
     private void getUserEmailFromIntent(){
 
-        userEmailString = getIntent().getStringExtra(SignUpActivity.EMAIL);
+        userEmailString = getIntent().getStringExtra("emailFromSignUp");
     }
 }

@@ -5,6 +5,7 @@ subscription OnCreateTask {
     title
     description
     status
+    taskImageCode
     createdAt
     updatedAt
     _version
@@ -19,6 +20,7 @@ subscription OnUpdateTask {
     title
     description
     status
+    taskImageCode
     createdAt
     updatedAt
     _version
@@ -33,6 +35,7 @@ subscription OnDeleteTask {
     title
     description
     status
+    taskImageCode
     createdAt
     updatedAt
     _version
@@ -84,6 +87,7 @@ subscription OnCreateTeam {
         title
         description
         status
+        taskImageCode
         createdAt
         updatedAt
         _version
@@ -111,6 +115,7 @@ subscription OnUpdateTeam {
         title
         description
         status
+        taskImageCode
         createdAt
         updatedAt
         _version
@@ -138,6 +143,7 @@ subscription OnDeleteTeam {
         title
         description
         status
+        taskImageCode
         createdAt
         updatedAt
         _version

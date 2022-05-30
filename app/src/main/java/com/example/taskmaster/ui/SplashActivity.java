@@ -18,16 +18,21 @@ import com.amplifyframework.core.Amplify;
 import com.amplifyframework.datastore.AWSDataStorePlugin;
 import com.amplifyframework.datastore.generated.model.Task;
 import com.amplifyframework.datastore.generated.model.Team;
+import com.amplifyframework.storage.s3.AWSS3StoragePlugin;
 import com.example.taskmaster.Auth.LoginActivity;
+import com.example.taskmaster.data.UserInfo;
 
 import java.util.ArrayList;
 import java.util.List;
+
 @RequiresApi(api = Build.VERSION_CODES.N)
 public class SplashActivity extends AppCompatActivity {
 
     private static final String TAG = SplashActivity.class.getSimpleName();
-    public static List<Team> teamsList = new ArrayList<>();
     public static List<AuthUserAttribute> userAttributes = new ArrayList<>();
+    public static List<Team> teamsList = new ArrayList<>();
+    private boolean isSignedInBoolean;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,13 +58,10 @@ public class SplashActivity extends AppCompatActivity {
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-
-                //This method will be executed once the timer is over
-                // Start your app main activity
-                Intent intent = new Intent(SplashActivity.this, LoginActivity.class);
-                startActivity(intent);
-                // close this activity
-                finish();
+                if (isSignedInBoolean)
+                    navigateToMainActivity();
+                else
+                    navigateToLoginPage();
             }
         }, 1000);
     }
@@ -70,6 +72,7 @@ public class SplashActivity extends AppCompatActivity {
             Amplify.addPlugin(new AWSApiPlugin());
             // Add this line, to include the Auth plugin.
             Amplify.addPlugin(new AWSCognitoAuthPlugin());
+            Amplify.addPlugin(new AWSS3StoragePlugin());
             Amplify.configure(getApplicationContext());
         } catch (AmplifyException error) {
             Log.e(TAG, "Could not initialize Amplify", error);
@@ -90,21 +93,23 @@ public class SplashActivity extends AppCompatActivity {
                 error -> Log.e(TAG, error.toString())
         );
 
+
     }
 
-    private void checkTheSession(){
+    private void checkTheSession() {
         Amplify.Auth.fetchAuthSession(
                 result -> {
                     Log.i(TAG, result.toString());
-                    if (result.isSignedIn()){
+                    if (result.isSignedIn()) {
                         fetchCurrentUserAttributes();
-                        navigateToMainActivity();
-                    }else {
-                        navigateToLoginPage();
+                        isSignedInBoolean = true;
+                    } else {
+                        isSignedInBoolean = false;
                     }
                 },
                 error -> Log.e(TAG, error.toString())
         );
+
     }
 
     private void fetchTasksDataFromAPI() {
@@ -117,29 +122,43 @@ public class SplashActivity extends AppCompatActivity {
                         for (Task task : tasks.getData()) {
                             MainActivity.tasksList.add(task);
                         }
-                        Log.i(TAG, "fetchTaskDataFromAPI: Tasks import Done => " + MainActivity.tasksList.size());
                     }
                 },
                 error -> Log.e(TAG, error.toString())
         );
     }
 
-    private void fetchCurrentUserAttributes(){
+    private void fetchCurrentUserAttributes() {
 
         Amplify.Auth.fetchUserAttributes(
                 attributes -> {
                     Log.i(TAG, "User attributes = " + attributes);
                     userAttributes = attributes;
+                    sendInfoToUserInfoClass();
                 },
                 error -> Log.e(TAG, "Failed to fetch user attributes.", error)
         );
     }
 
-    private void navigateToLoginPage(){
-        startActivity(new Intent(this,LoginActivity.class));
+    private void navigateToLoginPage() {
+        startActivity(new Intent(this, LoginActivity.class));
+        finish();
     }
 
-    private void navigateToMainActivity(){
-        startActivity(new Intent(this,MainActivity.class));
+    private void navigateToMainActivity() {
+        startActivity(new Intent(this, MainActivity.class));
+        finish();
     }
+
+    private void sendInfoToUserInfoClass(){
+
+
+        UserInfo.firstName = userAttributes.get(3).getValue();
+        UserInfo.lastName = userAttributes.get(4).getValue();
+        UserInfo.email = userAttributes.get(5).getValue();
+        UserInfo.userTeam = userAttributes.get(0).getValue();
+        UserInfo.saveOtherUserInfoToSharedPreferences(this);
+    }
+
+
 }
