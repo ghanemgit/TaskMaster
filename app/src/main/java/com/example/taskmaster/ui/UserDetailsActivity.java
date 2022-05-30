@@ -1,21 +1,16 @@
 package com.example.taskmaster.ui;
 
-import androidx.annotation.RequiresApi;
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.annotation.SuppressLint;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.example.taskmaster.R;
 import com.example.taskmaster.data.UserInfo;
-
-import java.net.URI;
 
 @RequiresApi(api = Build.VERSION_CODES.N)
 public class UserDetailsActivity extends AppCompatActivity {
@@ -67,8 +62,7 @@ public class UserDetailsActivity extends AppCompatActivity {
     @SuppressLint("SetTextI18n")
     private void setTheCardInfo(){
 
-        Bitmap bMap = BitmapFactory.decodeFile("/data/data/com.example.taskmaster/files/first_task_bxeearisnq.jpg");
-        imageView.setImageBitmap(bMap);
+
         textView.setText("  Full name: "+firstName+" "+lastName);
         textView2.setText("  Email: "+email);
         textView3.setText("  Team: "+team);
