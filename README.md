@@ -6,6 +6,14 @@
 
 
 
+# Day 10
+#### Today I learned how to start work with storage in aws (S3) storage how to start configure it and add it in gradle build file In addition I learned how to upload file to s3 storage and how to delay with the key of image and connect it with the task, also I learned how to convert the the image to bitmap then to file to prepare it to upload process After that I started to applied function the function that responsible on download the files and pass the key for it to get specific file and I used generate random string method to naming the key of files. 
+### Here is some screenshot to see  my work today you can see it [here](ScreenShot/10thDay/Day10.md)
+### Go directly to the activities package [here](app/src/main/java/com/example/taskmaster/ui)
+
+
+
+
 # Day 9
 #### Today I learned how to implement the authorization process using Cognito service from the awa services and enable users to make their own accounts, by implement some coding to enable that and the process I learned today is make sign up function that allow the user to make his or her account, login function to let user enter to they accounts, sign out function to help user to log out from the current device or all device at the same time, reset password function to help the users to reset their passwords, change password method to let the logged in user to change the password if he want and last thing methode to keep user logged in in the application, In addition I learned how to implement the progress bar To remove doubt from the user's imagination.
 ### The changes included in this release

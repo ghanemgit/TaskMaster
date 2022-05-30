@@ -16,6 +16,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.amplifyframework.core.Amplify;
 import com.example.taskmaster.R;
+import com.example.taskmaster.data.UserInfo;
 
 @RequiresApi(api = Build.VERSION_CODES.N)
 public class ForgetPasswordActivity extends AppCompatActivity {
@@ -74,7 +75,10 @@ public class ForgetPasswordActivity extends AppCompatActivity {
     }
 
     private void navigateToResetPasswordActivity(){
-        startActivity(new Intent(this,ResetPasswordActivity.class));
+        Intent intent = new Intent(this,ResetPasswordActivity.class);
+        intent.putExtra(UserInfo.EMAIL,resetEmail.getText().toString());
+        startActivity(intent);
+
         finish();
     }
 

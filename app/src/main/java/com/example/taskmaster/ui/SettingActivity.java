@@ -31,6 +31,7 @@ import com.example.taskmaster.Auth.LoginActivity;
 import com.example.taskmaster.Auth.ResetPasswordActivity;
 import com.example.taskmaster.Auth.SignUpActivity;
 import com.example.taskmaster.R;
+import com.example.taskmaster.data.UserInfo;
 
 @SuppressLint("ResourceAsColor")
 @RequiresApi(api = Build.VERSION_CODES.N)
@@ -55,20 +56,14 @@ public class SettingActivity extends AppCompatActivity {
 
         setUserWelcoming();
 
-        getAllSharedPreferencesAsString();
-
         setListView();
+
+        setOnFullNameListener();
     }
 
-
-
-    public static String getDefaults(String key, Context context) {
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
-        return preferences.getString(key, null);
-    }
 
     private void setUserWelcoming(){
-        textView.setText(getDefaults(SignUpActivity.FIRST_NAME,this) + " " + getDefaults(SignUpActivity.LAST_NAME,this));
+        textView.setText(UserInfo.firstName + " " + UserInfo.lastName);
     }
 
 
@@ -132,9 +127,6 @@ public class SettingActivity extends AppCompatActivity {
     private void navigateToEditPage(){
 
         Intent intent = new Intent(this, EditUserDetailsActivity.class);
-        intent.putExtra(SignUpActivity.FIRST_NAME,fullName);
-        intent.putExtra(SignUpActivity.EMAIL,email);
-        intent.putExtra(SignUpActivity.PASSWORD,password);
         startActivity(intent);
 
     }
@@ -142,7 +134,8 @@ public class SettingActivity extends AppCompatActivity {
 
         Intent intent = new Intent(this, ResetPasswordActivity.class);
         intent.putExtra(ACTIVITY,SettingActivity.class.getSimpleName());
-        intent.putExtra(SignUpActivity.PASSWORD,password);
+        intent.putExtra(UserInfo.EMAIL,email);
+        intent.putExtra(UserInfo.PASSWORD,password);
         startActivity(intent);
     }
     private void deleteAccount(){
@@ -151,13 +144,6 @@ public class SettingActivity extends AppCompatActivity {
                 () -> Log.i(TAG, "Delete user succeeded"),
                 error -> Log.e(TAG, "Delete user failed with error " + error.toString())
         );
-    }
-
-    private void getAllSharedPreferencesAsString(){
-
-        fullName = getDefaults(SignUpActivity.FIRST_NAME,this);
-        email = getDefaults(SignUpActivity.EMAIL,this);
-        password = getDefaults(SignUpActivity.PASSWORD,this);
     }
 
     private void deleteAccountAlertDialog() {
@@ -201,6 +187,15 @@ public class SettingActivity extends AppCompatActivity {
 
     private int randomString(){
         return (int)(Math.random() * (5000 - 2000) + 1) + 2000;
+    }
+
+    private void setOnFullNameListener(){
+
+        textView.setOnClickListener(view -> {
+            Intent intent = new Intent(this,UserDetailsActivity.class);
+            intent.putExtra("tasksListSize",getIntent().getIntExtra("tasksListSize",5));
+            startActivity(intent);
+        });
     }
 
 }

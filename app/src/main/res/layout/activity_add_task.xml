@@ -37,7 +37,7 @@
         android:layout_marginStart="15dp"
         android:layout_marginEnd="15dp"
         android:background="@drawable/half_rounded_edit_text"
-        android:layout_marginTop="40dp"
+        android:layout_marginTop="15dp"
         android:hint="@string/task_title"
         android:inputType="text" />
 
@@ -57,7 +57,7 @@
         android:layout_below="@+id/taskTitleBox"
         android:background="@drawable/half_rounded_edit_text"
         android:layout_marginStart="15dp"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="10dp"
         android:hint="@string/task_description"
         android:inputType="textMultiLine" />
 
@@ -66,7 +66,7 @@
     <Spinner
         android:id="@+id/task_states_spinner"
         android:layout_width="200dp"
-        android:layout_height="50dp"
+        android:layout_height="30dp"
         android:background="@drawable/rounded_edit_text_teal"
         android:layout_below="@+id/styled_task_description_box"
         android:layout_centerHorizontal="true"
@@ -78,7 +78,7 @@
     <Spinner
         android:id="@+id/task_team_spinner"
         android:layout_width="200dp"
-        android:layout_height="50dp"
+        android:layout_height="30dp"
         android:layout_below="@+id/task_states_spinner"
         android:layout_centerHorizontal="true"
         android:background="@drawable/rounded_edit_text_teal"
@@ -87,11 +87,24 @@
         />
 
     <Button
-        android:id="@+id/create_task_button"
+        android:id="@+id/upload_photo_button"
         android:layout_width="150dp"
         android:layout_height="50dp"
         android:layout_below="@+id/task_team_spinner"
-        android:layout_marginTop="30dp"
+        android:layout_marginTop="15dp"
+        android:layout_centerHorizontal="true"
+        android:backgroundTint="#3BACB6"
+        android:drawableLeft="@drawable/ic_upload_image"
+        android:text="Upload"
+        android:textColor="@color/white" />
+
+
+    <Button
+        android:id="@+id/create_task_button"
+        android:layout_width="150dp"
+        android:layout_height="50dp"
+        android:layout_below="@+id/upload_photo_button"
+        android:layout_marginTop="15dp"
         android:layout_centerHorizontal="true"
         android:backgroundTint="#3BACB6"
         android:drawableLeft="@drawable/add_task_icon"
@@ -104,8 +117,10 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/create_task_button"
         android:layout_marginStart="20dp"
-        android:layout_marginTop="25dp"
+        android:layout_marginTop="20dp"
         android:textColor="@color/black"
         android:background="#F7FF93"
          />
+
+
 </RelativeLayout>
