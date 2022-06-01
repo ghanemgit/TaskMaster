@@ -9,6 +9,7 @@
         <entry key="..\:/Users/Lenovo/AppData/Local/Android/Sdk/platforms/android-32/data/res/layout/simple_spinner_item.xml" value="0.3009833262077811" />
         <entry key="..\:/Users/Lenovo/Desktop/Advanced Java/Android/Labs/TaskMaster/app/src/main/res/drawable-v24/ic_launcher_foreground.xml" value="0.282" />
         <entry key="..\:/Users/Lenovo/Desktop/Advanced Java/Android/Labs/TaskMaster/app/src/main/res/drawable/bg_gradient.xml" value="0.26" />
+        <entry key="..\:/Users/Lenovo/Desktop/Advanced Java/Android/Labs/TaskMaster/app/src/main/res/drawable/divider_card.xml" value="0.169" />
         <entry key="..\:/Users/Lenovo/Desktop/Advanced Java/Android/Labs/TaskMaster/app/src/main/res/drawable/edit_text_design.xml" value="0.286" />
         <entry key="..\:/Users/Lenovo/Desktop/Advanced Java/Android/Labs/TaskMaster/app/src/main/res/drawable/half_bottom_rounded_edit_text_yellow.xml" value="0.2955" />
         <entry key="..\:/Users/Lenovo/Desktop/Advanced Java/Android/Labs/TaskMaster/app/src/main/res/drawable/half_rounded_edit_text.xml" value="0.275" />
@@ -18,6 +19,7 @@
         <entry key="..\:/Users/Lenovo/Desktop/Advanced Java/Android/Labs/TaskMaster/app/src/main/res/drawable/non_rounded_edit_text_yellow.xml" value="0.2955" />
         <entry key="..\:/Users/Lenovo/Desktop/Advanced Java/Android/Labs/TaskMaster/app/src/main/res/drawable/progress_bar_rotating.xml" value="0.3425" />
         <entry key="..\:/Users/Lenovo/Desktop/Advanced Java/Android/Labs/TaskMaster/app/src/main/res/drawable/rounded_edit_text.xml" value="0.275" />
+        <entry key="..\:/Users/Lenovo/Desktop/Advanced Java/Android/Labs/TaskMaster/app/src/main/res/drawable/rounded_edit_text_teal.xml" value="0.169" />
         <entry key="..\:/Users/Lenovo/Desktop/Advanced Java/Android/Labs/TaskMaster/app/src/main/res/drawable/rounded_edit_text_yellow.xml" value="0.2755" />
         <entry key="..\:/Users/Lenovo/Desktop/Advanced Java/Android/Labs/TaskMaster/app/src/main/res/drawable/slpash_background.xml" value="0.26" />
         <entry key="..\:/Users/Lenovo/Desktop/Advanced Java/Android/Labs/TaskMaster/app/src/main/res/drawable/splash_background.xml" value="0.26" />
@@ -26,8 +28,8 @@
         <entry key="..\:/Users/Lenovo/Desktop/Advanced Java/Android/Labs/TaskMaster/app/src/main/res/layout/activity_edit_user_details.xml" value="0.3009833262077811" />
         <entry key="..\:/Users/Lenovo/Desktop/Advanced Java/Android/Labs/TaskMaster/app/src/main/res/layout/activity_forget_password.xml" value="0.3009833262077811" />
         <entry key="..\:/Users/Lenovo/Desktop/Advanced Java/Android/Labs/TaskMaster/app/src/main/res/layout/activity_loading_dialog.xml" value="0.33" />
-        <entry key="..\:/Users/Lenovo/Desktop/Advanced Java/Android/Labs/TaskMaster/app/src/main/res/layout/activity_login.xml" value="0.67" />
-        <entry key="..\:/Users/Lenovo/Desktop/Advanced Java/Android/Labs/TaskMaster/app/src/main/res/layout/activity_main.xml" value="0.5" />
+        <entry key="..\:/Users/Lenovo/Desktop/Advanced Java/Android/Labs/TaskMaster/app/src/main/res/layout/activity_login.xml" value="0.33" />
+        <entry key="..\:/Users/Lenovo/Desktop/Advanced Java/Android/Labs/TaskMaster/app/src/main/res/layout/activity_main.xml" value="0.33" />
         <entry key="..\:/Users/Lenovo/Desktop/Advanced Java/Android/Labs/TaskMaster/app/src/main/res/layout/activity_recycler_view.xml" value="0.3344418052256532" />
         <entry key="..\:/Users/Lenovo/Desktop/Advanced Java/Android/Labs/TaskMaster/app/src/main/res/layout/activity_reset_password.xml" value="0.3009833262077811" />
         <entry key="..\:/Users/Lenovo/Desktop/Advanced Java/Android/Labs/TaskMaster/app/src/main/res/layout/activity_setting.xml" value="0.3009833262077811" />
@@ -38,8 +40,9 @@
         <entry key="..\:/Users/Lenovo/Desktop/Advanced Java/Android/Labs/TaskMaster/app/src/main/res/layout/activity_user_details.xml" value="0.33061594202898553" />
         <entry key="..\:/Users/Lenovo/Desktop/Advanced Java/Android/Labs/TaskMaster/app/src/main/res/layout/activity_verification_code.xml" value="0.5" />
         <entry key="..\:/Users/Lenovo/Desktop/Advanced Java/Android/Labs/TaskMaster/app/src/main/res/layout/settings_activity.xml" value="0.33061594202898553" />
-        <entry key="..\:/Users/Lenovo/Desktop/Advanced Java/Android/Labs/TaskMaster/app/src/main/res/layout/task_item_layout.xml" value="0.67" />
+        <entry key="..\:/Users/Lenovo/Desktop/Advanced Java/Android/Labs/TaskMaster/app/src/main/res/layout/task_item_layout.xml" value="0.33" />
         <entry key="..\:/Users/Lenovo/Desktop/Advanced Java/Android/Labs/TaskMaster/app/src/main/res/menu/main.xml" value="0.3009833262077811" />
+        <entry key="..\:/Users/Lenovo/Desktop/Advanced Java/Android/Labs/TaskMaster/app/src/main/res/menu/task_details_menu.xml" value="0.36666666666666664" />
         <entry key="..\:/Users/Lenovo/Desktop/Advanced Java/Android/Labs/TaskMaster/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml" value="0.2235" />
         <entry key="..\:/Users/Lenovo/Desktop/Advanced Java/Android/Labs/TaskMaster/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml" value="0.2235" />
         <entry key="..\:/Users/Lenovo/Desktop/Advanced Java/Android/Labs/TaskMaster/app/src/main/res/mipmap-anydpi-v26/loading_image.xml" value="0.3125" />

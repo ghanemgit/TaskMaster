@@ -28,11 +28,11 @@ import com.amplifyframework.core.Amplify;
 import com.amplifyframework.datastore.generated.model.Team;
 import com.example.taskmaster.R;
 import com.example.taskmaster.ui.LoadingDialog;
-import com.example.taskmaster.ui.MainActivity;
 import com.example.taskmaster.ui.SplashActivity;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @RequiresApi(api = Build.VERSION_CODES.N)
@@ -53,7 +53,8 @@ public class SignUpActivity extends AppCompatActivity {
     private String emailSignupString;
     private String passwordSignupString;
     private String confirmPasswordSignupString;
-    private String selectedItemSpinnerString;
+    private String selectedTeamToString;
+    private String SelectedTeamId;
     private LoadingDialog loadingDialog;
 
 
@@ -102,15 +103,44 @@ public class SignUpActivity extends AppCompatActivity {
         loadingDialog = new LoadingDialog(SignUpActivity.this);
     }
 
+    private void setAdapterToStatesTeamArraySpinner() {
+
+        /*
+        https://developer.android.com/guide/topics/ui/controls/spinner
+         */
+        List<String> teams;
+        teams = SplashActivity.teamsList.stream().map(Team::getName).sorted().collect(Collectors.toList());
+
+        /*
+        https://www.codegrepper.com/code-examples/java/android+studio+how+to+fill+spinner
+         */
+        selectTeamSpinner = findViewById(R.id.signup_task_team_spinner_setting);
+        // Create an ArrayAdapter using the string array and a default spinner layout
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item,
+                teams);
+        // Specify the layout to use when the list of choices appears
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        // Apply the adapter to the spinner
+        selectTeamSpinner.setAdapter(adapter);
+    }
+
+    private void buttonsAction() {
+
+        signupBtn.setOnClickListener(view -> {
+            getAllAsStrings();
+            signupButtonAction();
+        });
+    }
+
     private void getAllAsStrings() {
         firstNameSignupString = firstNameSignup.getText().toString().trim();
         lastNameSignupString = lastNameSignup.getText().toString().trim();
         emailSignupString = emailSignup.getText().toString().trim();
         passwordSignupString = passwordSignup.getText().toString().trim();
         confirmPasswordSignupString = confirmPassword.getText().toString().trim();
-        selectedItemSpinnerString = selectTeamSpinner.getSelectedItem().toString();
+        selectedTeamToString = selectTeamSpinner.getSelectedItem().toString();
+        SelectedTeamId = SplashActivity.teamsList.stream().filter(team -> Objects.equals(team.getName(),selectedTeamToString )).findFirst().get().getId();
     }
-
 
     private void signupButtonAction() {
 
@@ -145,7 +175,8 @@ public class SignUpActivity extends AppCompatActivity {
         attributes.add(new AuthUserAttribute(AuthUserAttributeKey.email(), emailSignupString));
         attributes.add(new AuthUserAttribute(AuthUserAttributeKey.name(), firstNameSignupString));
         attributes.add(new AuthUserAttribute(AuthUserAttributeKey.familyName(), lastNameSignupString));
-        attributes.add(new AuthUserAttribute(AuthUserAttributeKey.custom("custom:user_team"), selectedItemSpinnerString));
+        attributes.add(new AuthUserAttribute(AuthUserAttributeKey.custom("custom:user_team"), selectedTeamToString));
+        attributes.add(new AuthUserAttribute(AuthUserAttributeKey.custom("custom:user_team_id"), SelectedTeamId));
 
 
 
@@ -172,23 +203,6 @@ public class SignUpActivity extends AppCompatActivity {
         );
     }
 
-    private void navigateToVerificationActivity() {
-        Intent intent = new Intent(this, VerificationCodeActivity.class);
-        intent.putExtra("emailFromSignUp", emailSignupString);
-        loadingDialog.dismissLoadingDialog();
-        startActivity(intent);
-        finish();
-    }
-
-    private void buttonsAction() {
-
-        signupBtn.setOnClickListener(view -> {
-            getAllAsStrings();
-            signupButtonAction();
-        });
-    }
-
-
     private void savePasswordSharedPreferences() {
 
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
@@ -198,24 +212,11 @@ public class SignUpActivity extends AppCompatActivity {
         preferenceEditor.apply();
     }
 
-    private void setAdapterToStatesTeamArraySpinner() {
-
-        /*
-        https://developer.android.com/guide/topics/ui/controls/spinner
-         */
-        List<String> teams;
-        teams = SplashActivity.teamsList.stream().map(Team::getName).sorted().collect(Collectors.toList());
-
-        /*
-        https://www.codegrepper.com/code-examples/java/android+studio+how+to+fill+spinner
-         */
-        selectTeamSpinner = findViewById(R.id.signup_task_team_spinner_setting);
-        // Create an ArrayAdapter using the string array and a default spinner layout
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item,
-                teams);
-        // Specify the layout to use when the list of choices appears
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        // Apply the adapter to the spinner
-        selectTeamSpinner.setAdapter(adapter);
+    private void navigateToVerificationActivity() {
+        Intent intent = new Intent(this, VerificationCodeActivity.class);
+        intent.putExtra("emailFromSignUp", emailSignupString);
+        loadingDialog.dismissLoadingDialog();
+        startActivity(intent);
+        finish();
     }
 }

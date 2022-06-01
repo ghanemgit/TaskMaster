@@ -27,7 +27,6 @@ import com.example.taskmaster.R;
 import com.example.taskmaster.data.UserInfo;
 import com.example.taskmaster.ui.LoadingDialog;
 import com.example.taskmaster.ui.MainActivity;
-import com.example.taskmaster.ui.SplashActivity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,6 +36,7 @@ import java.util.List;
 public class LoginActivity extends AppCompatActivity {
 
     private static final String TAG = LoginActivity.class.getSimpleName();
+    public static List<AuthUserAttribute> userAttributes = new ArrayList<>();
     private EditText email;
     private EditText password;
     private Button loginBtn;
@@ -91,63 +91,6 @@ public class LoginActivity extends AppCompatActivity {
         forgetPassword = findViewById(R.id.forget_password);
         deviceRememberCheckBox = findViewById(R.id.remember_device_checkBox);
         loadingDialog = new LoadingDialog(LoginActivity.this);
-
-    }
-
-    private void loginButtonAction() {
-
-        if (TextUtils.isEmpty(emailString) || emailString.contains(" ")) {
-            email.setError("Enter Email");
-        } else if (TextUtils.isEmpty(passwordString)) {
-            password.setError("Enter Password");
-        } else {
-            runProgressDialog();
-            login();
-        }
-
-        View view2 = this.getCurrentFocus();
-        if (view2 != null) {
-            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-            imm.hideSoftInputFromWindow(view2.getWindowToken(), 0);
-        }
-
-    }
-
-    private void login() {
-
-
-        Amplify.Auth.signIn(
-                emailString,
-                passwordString,
-                result -> {
-                    Log.i(TAG, result.isSignInComplete() ? "Sign in succeeded" : "Sign in not complete");
-                    if (result.isSignInComplete()){
-                        fetchCurrentUserAttributes();
-                        if (deviceRememberCheckBox.isChecked()) {
-                            rememberDevice();
-                        }
-                        savePasswordSharedPreferences();
-                        runOnUiThread(this::navigateToMainActivity);
-                    }else {
-                        runOnUiThread(() -> {
-                            dismissDialog();
-                            Toast.makeText(LoginActivity.this, "Something went wrong!", Toast.LENGTH_SHORT).show();
-                            onResume();
-                        });
-
-                    }
-
-                },
-                error -> {
-                    Log.e(TAG, error.toString());
-                    runOnUiThread(() -> {
-                        dismissDialog();
-                        Toast.makeText(this, "username or Password Incorrect", Toast.LENGTH_SHORT).show();
-                        onResume();
-                    });
-                }
-        );
-
     }
 
     private void buttonsAction() {
@@ -166,11 +109,77 @@ public class LoginActivity extends AppCompatActivity {
         });
     }
 
-
     private void getAllAsString() {
 
         emailString = email.getText().toString().trim();
         passwordString = password.getText().toString().trim();
+    }
+
+    private void loginButtonAction() {
+
+        if (TextUtils.isEmpty(emailString) || !emailString.contains("@")) {
+
+            email.setError("Enter valid Email");
+
+        } else if (TextUtils.isEmpty(passwordString)) {
+
+            password.setError("Enter Password");
+
+        } else {
+
+            runProgressDialog();
+            login();
+
+        }
+
+        View view2 = this.getCurrentFocus();
+        if (view2 != null) {
+            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(view2.getWindowToken(), 0);
+        }
+    }
+
+    private void runProgressDialog() {
+        loadingDialog.startLoadingDialog();
+    }
+
+    private void login() {
+
+
+        Amplify.Auth.signIn(
+                emailString,
+                passwordString,
+                result -> {
+                    Log.i(TAG, result.isSignInComplete() ? "Sign in succeeded" : "Sign in not complete");
+                    if (result.isSignInComplete()){
+                        if (deviceRememberCheckBox.isChecked()) {
+
+                            rememberDevice();
+                        }
+                        onlineFetchCurrentUserAttributes();
+
+                        savePasswordSharedPreferences();
+
+                        runOnUiThread(this::navigateToMainActivity);
+                    }else {
+
+                        runOnUiThread(() -> {
+                            dismissDialog();
+                            Toast.makeText(LoginActivity.this, "Something went wrong!", Toast.LENGTH_SHORT).show();
+                            onResume();
+                        });
+                    }
+                },
+                error -> {
+                    Log.e(TAG, error.toString());
+                    runOnUiThread(() -> {
+                        dismissDialog();
+                        Toast.makeText(this, "username or Password Incorrect", Toast.LENGTH_SHORT).show();
+                        onResume();
+                    });
+                }
+        );
+
     }
 
     private void rememberDevice() {
@@ -180,37 +189,28 @@ public class LoginActivity extends AppCompatActivity {
         );
     }
 
-    private void fetchCurrentUserAttributes() {
+    public void onlineFetchCurrentUserAttributes() {
 
         Amplify.Auth.fetchUserAttributes(
                 attributes -> {
+                    userAttributes.clear();
                     Log.i(TAG, "User attributes = " + attributes);
-                    sendInfoToUserInfoClass(attributes);
-                    UserInfo.saveOtherUserInfoToSharedPreferences(this);
+                    userAttributes = attributes;
+                    sendInfoToUserInfoClass();
                 },
                 error -> Log.e(TAG, "Failed to fetch user attributes.", error)
         );
     }
 
-    private void navigateToMainActivity() {
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                dismissDialog();
-                startActivity(new Intent(LoginActivity.this, MainActivity.class));
-                finish();
-            }
-        }, 1500);
+    public void sendInfoToUserInfoClass() {
 
-    }
-
-    private void runProgressDialog() {
-        loadingDialog.startLoadingDialog();
-    }
-
-    private void dismissDialog() {
-
-        loadingDialog.dismissLoadingDialog();
+        UserInfo.firstName = userAttributes.get(3).getValue();
+        UserInfo.lastName = userAttributes.get(5).getValue();
+        UserInfo.email = userAttributes.get(6).getValue();
+        UserInfo.userTeam = userAttributes.get(0).getValue();
+        UserInfo.userTeamId = userAttributes.get(4).getValue();
+        Log.i(TAG, "sendInfoToUserInfoClass: the user team is -> "+UserInfo.userTeam);
+        UserInfo.saveOtherUserInfoToSharedPreferences(this);
     }
 
     private void savePasswordSharedPreferences() {
@@ -222,14 +222,19 @@ public class LoginActivity extends AppCompatActivity {
         preferenceEditor.apply();
     }
 
+    private void navigateToMainActivity() {
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                dismissDialog();
+                startActivity(new Intent(LoginActivity.this, MainActivity.class));
+                finish();
+            }
+        }, 1500);
+    }
 
-    private void sendInfoToUserInfoClass(List<AuthUserAttribute> userAttributesParam) {
+    private void dismissDialog() {
 
-        Log.i(TAG, "The user team from attributes para in login page is : " + userAttributesParam.get(0).getValue());
-        UserInfo.firstName = userAttributesParam.get(3).getValue();
-        UserInfo.lastName = userAttributesParam.get(4).getValue();
-        UserInfo.email = userAttributesParam.get(5).getValue();
-        UserInfo.userTeam = userAttributesParam.get(0).getValue();
-        UserInfo.saveOtherUserInfoToSharedPreferences(this);
+        loadingDialog.dismissLoadingDialog();
     }
 }

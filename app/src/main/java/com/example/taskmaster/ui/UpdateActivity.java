@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 @RequiresApi(api = Build.VERSION_CODES.N)
 public class UpdateActivity extends AppCompatActivity {
 
+    private static final String TAG = UpdateActivity.class.getSimpleName();
     private Task newTask;
     private Team newTeam;
     private EditText taskTitle;
@@ -65,13 +66,13 @@ public class UpdateActivity extends AppCompatActivity {
         Amplify.API.mutate(ModelMutation.update(newTeam),
                 response -> {
 
-                    Log.i("MyAmplifyApp", "Todo with id: " + response.getData().getId());
+                    Log.i(TAG, "Todo with id: " + response.getData().getId());
                     Amplify.API.mutate(ModelMutation.update(newTask),
-                            pass -> Log.i("MyAmplifyApp", "Todo with id: " + pass.getData().getId()),
-                            error -> Log.e("MyAmplifyApp", "Create failed", error)
+                            pass -> Log.i(TAG, "Todo with id: " + pass.getData().getId()),
+                            error -> Log.e(TAG, "Create failed", error)
                     );
                 },
-                error -> Log.e("MyAmplifyApp", "Create failed", error)
+                error -> Log.e(TAG, "Create failed", error)
         );
 
 
@@ -85,7 +86,7 @@ public class UpdateActivity extends AppCompatActivity {
                         Amplify.DataStore.save(editedTeam,
 
                                 updated -> {
-                                    Log.i("MyAmplifyApp", "Updated a post.");
+                                    Log.i(TAG, "Updated a post.");
 
                                     Amplify.DataStore.query(Task.class, Where.id(newTask.getId()),
                                             matchesTask -> {

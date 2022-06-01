@@ -2,10 +2,8 @@ package com.example.taskmaster.Auth;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
@@ -20,21 +18,19 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.amplifyframework.api.graphql.model.ModelQuery;
 import com.amplifyframework.auth.AuthUserAttribute;
 import com.amplifyframework.auth.AuthUserAttributeKey;
 import com.amplifyframework.core.Amplify;
-import com.amplifyframework.datastore.generated.model.Task;
 import com.amplifyframework.datastore.generated.model.Team;
 import com.example.taskmaster.R;
 import com.example.taskmaster.data.UserInfo;
 import com.example.taskmaster.ui.LoadingDialog;
-import com.example.taskmaster.ui.MainActivity;
 import com.example.taskmaster.ui.SettingActivity;
 import com.example.taskmaster.ui.SplashActivity;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @RequiresApi(api = Build.VERSION_CODES.N)
@@ -48,6 +44,7 @@ public class EditUserDetailsActivity extends AppCompatActivity {
     private String firstNameEditString;
     private String lastNameEditString;
     private String selectedItemSpinnerString;
+    private String selectedTeamId;
     private String currentFirstName;
     private String currentLastName;
     private String currentTeam;
@@ -93,9 +90,9 @@ public class EditUserDetailsActivity extends AppCompatActivity {
 
     private void initializeAllString() {
 
-        currentFirstName = UserInfo.firstName;
-        currentLastName = UserInfo.lastName;
-        currentTeam = UserInfo.userTeam;
+        currentFirstName = UserInfo.getDefaults(UserInfo.FIRST_NAME,null,this);
+        currentLastName = UserInfo.getDefaults(UserInfo.LAST_NAME,null,this);
+        currentTeam = UserInfo.getDefaults(UserInfo.USER_TEAM,null,this);
     }
 
     private void setAdapterToStatesTeamArraySpinner() {
@@ -130,7 +127,6 @@ public class EditUserDetailsActivity extends AppCompatActivity {
 
         editBtn.setOnClickListener(view -> {
             getAllAsStrings();
-            fetchTasksDataFromAPI();
             editButtonAction();
         });
     }
@@ -139,6 +135,7 @@ public class EditUserDetailsActivity extends AppCompatActivity {
         firstNameEditString = editFirstName.getText().toString().trim();
         lastNameEditString = editLastNameSignup.getText().toString().trim();
         selectedItemSpinnerString = editSelectTeamSpinner.getSelectedItem().toString();
+        selectedTeamId = SplashActivity.teamsList.stream().filter(team -> Objects.equals(team.getName(),selectedItemSpinnerString )).findFirst().get().getId();
     }
 
     private void editButtonAction() {
@@ -146,16 +143,23 @@ public class EditUserDetailsActivity extends AppCompatActivity {
         if (editFirstName.getText().toString().equals(currentFirstName)
                 && editLastNameSignup.getText().toString().equals(currentLastName)
                 && editSelectTeamSpinner.getSelectedItem().toString().equals(currentTeam)) {
+
             withoutEditAlert();
 
         } else if (TextUtils.isEmpty(editFirstName.getText())) {
+
             editFirstName.setError("Enter a first name");
 
+
         } else if (TextUtils.isEmpty(editLastNameSignup.getText())) {
+
             editLastNameSignup.setError("Enter a last name");
+
         } else {
+
             loadingDialog.startLoadingDialog();
             update();
+
         }
 
         View view2 = this.getCurrentFocus();
@@ -187,10 +191,14 @@ public class EditUserDetailsActivity extends AppCompatActivity {
         attributes.add(new AuthUserAttribute(AuthUserAttributeKey.name(), firstNameEditString));
         attributes.add(new AuthUserAttribute(AuthUserAttributeKey.familyName(), lastNameEditString));
         attributes.add(new AuthUserAttribute(AuthUserAttributeKey.custom("custom:user_team"), selectedItemSpinnerString));
+        attributes.add(new AuthUserAttribute(AuthUserAttributeKey.custom("custom:user_team_id"), selectedTeamId));
+
 
         Log.i(TAG, "First NAme: "+firstNameEditString);
         Log.i(TAG, "Last NAme: "+lastNameEditString);
         Log.i(TAG, "Team NAme: "+selectedItemSpinnerString);
+        Log.i(TAG, "Team ID: "+selectedTeamId);
+
 
 
 
@@ -199,7 +207,6 @@ public class EditUserDetailsActivity extends AppCompatActivity {
                 result -> {
                     Log.i(TAG, "Result: " + result);
                     sendInfoToUserInfoClass();
-                    UserInfo.saveOtherUserInfoToSharedPreferences(this);
                     runOnUiThread(this::navigateToSettingsActivity);
                 },
                 error -> {
@@ -213,21 +220,14 @@ public class EditUserDetailsActivity extends AppCompatActivity {
         );
     }
 
-    private void fetchTasksDataFromAPI() {
+    private void sendInfoToUserInfoClass() {
 
-        Amplify.API.query(
-                ModelQuery.list(com.amplifyframework.datastore.generated.model.Task.class),
-                tasks -> {
-                    MainActivity.tasksList.clear();
-                    if (tasks.hasData()) {
-                        for (Task task : tasks.getData()) {
-                            MainActivity.tasksList.add(task);
-                        }
-                        Log.i(TAG, "fetchTaskDataFromAPI: Tasks import Done => " + MainActivity.tasksList.size());
-                    }
-                },
-                error -> Log.e(TAG, error.toString())
-        );
+        UserInfo.firstName = firstNameEditString;
+        UserInfo.lastName = lastNameEditString;
+        UserInfo.userTeam = selectedItemSpinnerString;
+        UserInfo.userTeamId = selectedTeamId;
+        UserInfo.saveOtherUserInfoToSharedPreferences(this);
+
     }
 
     private void navigateToSettingsActivity() {
@@ -235,13 +235,6 @@ public class EditUserDetailsActivity extends AppCompatActivity {
         startActivity(new Intent(this, SettingActivity.class));
         loadingDialog.dismissLoadingDialog();
         finish();
-    }
-
-    private void sendInfoToUserInfoClass() {
-
-        UserInfo.firstName = firstNameEditString;
-        UserInfo.lastName = lastNameEditString;
-        UserInfo.userTeam = selectedItemSpinnerString;
     }
 
 }

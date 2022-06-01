@@ -44,9 +44,6 @@ public class SettingActivity extends AppCompatActivity {
     private TextView textView;
     private final String[] itemList = {"Edit Profile","Change password","Delete account",""};
     private final String[] subItemsList = {"change name, and email"};
-    private String fullName;
-    private String email;
-    private String password;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -61,19 +58,17 @@ public class SettingActivity extends AppCompatActivity {
         setOnFullNameListener();
     }
 
-
-    private void setUserWelcoming(){
-        textView.setText(UserInfo.firstName + " " + UserInfo.lastName);
-    }
-
-
     private void findViewByIdMethod() {
 
         listView = findViewById(R.id.settings_list_views);
         textView = findViewById(R.id.user_welcoming_settings);
-
     }
 
+    @SuppressLint("SetTextI18n")
+    private void setUserWelcoming(){
+        textView.setText(UserInfo.getDefaults(UserInfo.FIRST_NAME,"Guest",this)
+                + " " + UserInfo.getDefaults(UserInfo.LAST_NAME,"",this));
+    }
 
     private void setListView(){
 
@@ -104,8 +99,6 @@ public class SettingActivity extends AppCompatActivity {
             }
         };
 
-
-
         listView.setAdapter(arrayAdapter);
         listView.setOnItemClickListener((adapterView, view, i, l) -> {
 
@@ -130,20 +123,14 @@ public class SettingActivity extends AppCompatActivity {
         startActivity(intent);
 
     }
+
     private void navigateToResetPasswordPage(){
 
         Intent intent = new Intent(this, ResetPasswordActivity.class);
         intent.putExtra(ACTIVITY,SettingActivity.class.getSimpleName());
-        intent.putExtra(UserInfo.EMAIL,email);
-        intent.putExtra(UserInfo.PASSWORD,password);
+        intent.putExtra(UserInfo.EMAIL,UserInfo.getDefaults(UserInfo.EMAIL,null,this));
+        intent.putExtra(UserInfo.getDefaults(UserInfo.EMAIL,null,this),UserInfo.getDefaults(UserInfo.PASSWORD,null,this));
         startActivity(intent);
-    }
-    private void deleteAccount(){
-
-        Amplify.Auth.deleteUser(
-                () -> Log.i(TAG, "Delete user succeeded"),
-                error -> Log.e(TAG, "Delete user failed with error " + error.toString())
-        );
     }
 
     private void deleteAccountAlertDialog() {
@@ -181,12 +168,20 @@ public class SettingActivity extends AppCompatActivity {
         alert.show();
     }
 
-    private void navigateToLoginPage(){
-        startActivity(new Intent(this, LoginActivity.class));
-    }
-
     private int randomString(){
         return (int)(Math.random() * (5000 - 2000) + 1) + 2000;
+    }
+
+    private void deleteAccount(){
+
+        Amplify.Auth.deleteUser(
+                () -> Log.i(TAG, "Delete user succeeded"),
+                error -> Log.e(TAG, "Delete user failed with error " + error.toString())
+        );
+    }
+
+    private void navigateToLoginPage(){
+        startActivity(new Intent(this, LoginActivity.class));
     }
 
     private void setOnFullNameListener(){
@@ -197,5 +192,4 @@ public class SettingActivity extends AppCompatActivity {
             startActivity(intent);
         });
     }
-
 }

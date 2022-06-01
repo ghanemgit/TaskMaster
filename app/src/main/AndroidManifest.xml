@@ -50,9 +50,6 @@
             android:exported="false"
             android:label="Update Task" />
         <activity
-            android:name=".ui.RecyclerViewActivity"
-            android:exported="false" />
-        <activity
             android:name=".ui.SettingActivity"
             android:exported="false"
             android:label="@string/action_settings"
@@ -69,9 +66,16 @@
             android:parentActivityName=".ui.MainActivity" />
         <activity
             android:name=".ui.AddTaskActivity"
-            android:exported="false"
+            android:exported="true"
             android:label="Add Task"
-            android:parentActivityName=".ui.MainActivity" />
+            android:parentActivityName=".ui.MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="image/*" />
+                <data android:mimeType="text/plain" />
+            </intent-filter>
+        </activity>
         <activity
             android:name=".ui.MainActivity"
             android:exported="true" />
