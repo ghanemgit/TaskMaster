@@ -2,32 +2,34 @@
 <androidx.cardview.widget.CardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
-    android:padding="10dp"
-    android:layout_margin="10dp"
-    android:background="@color/teal_200"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="70dp">
 
     <LinearLayout
         android:orientation="vertical"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
+        android:layout_width="match_parent"
+        android:gravity="center_vertical"
+        android:background="@drawable/divider_card"
+        android:layout_height="match_parent">
 
         <TextView
             android:id="@+id/title"
             android:text="No Title"
+            android:layout_marginTop="10dp"
+            android:layout_marginStart="10dp"
+            android:textColor="@color/black"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp"
+            android:textSize="15sp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"/>
 
-        <TextView
-            android:id="@+id/body"
-            android:text="No Body"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+
 
         <TextView
             android:id="@+id/state"
             android:text="No State"
+            android:layout_marginStart="11dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"/>
     </LinearLayout>

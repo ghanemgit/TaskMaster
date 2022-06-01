@@ -30,7 +30,6 @@ public class ForgetPasswordActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_forget_password);
 
-
         findAllViewById();
         buttonsAction();
     }
@@ -40,6 +39,7 @@ public class ForgetPasswordActivity extends AppCompatActivity {
         resetEmail = findViewById(R.id.forget_password_email_box);
         resetBtn = findViewById(R.id.send_verification_code_button);
     }
+
     private void buttonsAction(){
         resetBtn.setOnClickListener(view -> {
             resetButtonAction();
@@ -64,10 +64,8 @@ public class ForgetPasswordActivity extends AppCompatActivity {
         Amplify.Auth.resetPassword(
                 resetEmail.getText().toString(),
                 result -> {
-
                     navigateToResetPasswordActivity();
                     Log.i(TAG, result.toString());
-
                 },
                 error -> Log.e(TAG, error.toString())
         );
@@ -78,8 +76,6 @@ public class ForgetPasswordActivity extends AppCompatActivity {
         Intent intent = new Intent(this,ResetPasswordActivity.class);
         intent.putExtra(UserInfo.EMAIL,resetEmail.getText().toString());
         startActivity(intent);
-
         finish();
     }
-
 }

@@ -41,6 +41,12 @@ public class VerificationCodeActivity extends AppCompatActivity {
         loginBtn = findViewById(R.id.go_to_login_page_button);
         loadingDialog = new LoadingDialog(VerificationCodeActivity.this);
     }
+
+    private void getUserEmailFromIntent(){
+
+        userEmailString = getIntent().getStringExtra("emailFromSignUp");
+    }
+
     private void buttonsAction(){
 
         checkBtn.setOnClickListener(view -> {
@@ -52,6 +58,7 @@ public class VerificationCodeActivity extends AppCompatActivity {
             finish();
         });
     }
+
     private void checkVerificationCode(){
 
         String verificationCodeString = verificationCode.getText().toString();
@@ -75,8 +82,4 @@ public class VerificationCodeActivity extends AppCompatActivity {
         );
     }
 
-    private void getUserEmailFromIntent(){
-
-        userEmailString = getIntent().getStringExtra("emailFromSignUp");
-    }
 }

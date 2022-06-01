@@ -3,7 +3,6 @@ package com.example.taskmaster.ui;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.graphics.Color;
-import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.SpannableString;
@@ -12,20 +11,20 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.MenuCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
+import com.amplifyframework.api.graphql.model.ModelQuery;
 import com.amplifyframework.core.Amplify;
 import com.amplifyframework.datastore.generated.model.Task;
 import com.example.taskmaster.Auth.LoginActivity;
@@ -35,20 +34,19 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RequiresApi(api = Build.VERSION_CODES.N)
-@SuppressLint("SetTextI18n")
+@SuppressLint("NotifyDataSetChanged")
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = MainActivity.class.getSimpleName();
     private TextView usernameWelcoming;
     private FloatingActionButton floatAddTaskButton;
     public static List<Task> tasksList = new ArrayList<>();
-    private String theUserTeamString = "";
-    private String theUserTeamId = "";
     private String selectedItem = "";
     private LoadingDialog loadingDialog;
+    private CustomListRecyclerViewAdapter customListRecyclerViewAdapter;
+    private RecyclerView taskRecyclerView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,15 +59,14 @@ public class MainActivity extends AppCompatActivity {
 
         showUserNameOrTeam();
 
-        setTheUserTeamString();
-        System.out.println("The user team from the main activity is -> "+theUserTeamString);
+        onlineFetchTasksData();
+
         //set adapter for filter tasks spinner
         setAdapterToStatesTaskArraySpinner();
 
         taskFilterSpinner();
 
         getTasksListToHomePage();
-
 
         //Floating add task button in main activity
         floatAddTaskButton.setOnClickListener(view -> navigateToAddTaskPage());
@@ -78,7 +75,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        onResume();
+
         Log.i(TAG, "onStart: called");
     }
 
@@ -92,6 +89,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        onlineFetchTasksData();
         showUserNameOrTeam();
         Log.i(TAG, "onResume: called");
     }
@@ -157,6 +155,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void navigateToAddTaskPage() {
         Intent intent = new Intent(MainActivity.this, AddTaskActivity.class);
+        intent.putExtra(MainActivity.class.getSimpleName(),MainActivity.class.getSimpleName());
         startActivity(intent);
     }
 
@@ -167,81 +166,43 @@ public class MainActivity extends AppCompatActivity {
 
     private void navigateToSetting() {
         overridePendingTransition(0, 0);
-        Intent intent = new Intent(this,SettingActivity.class);
-        intent.putExtra("tasksListSize",tasksList.size());
+        Intent intent = new Intent(this, SettingActivity.class);
+        intent.putExtra("tasksListSize", tasksList.size());
         startActivity(intent);
         overridePendingTransition(0, 0);
     }
 
     //Set up the username details to show it in the home screen
-    private void showUserNameOrTeam() {
+    @SuppressLint("SetTextI18n")
+    public void showUserNameOrTeam() {
 
-        usernameWelcoming.setText(UserInfo.firstName+" "+UserInfo.lastName+" Tasks");
+        usernameWelcoming.setText(UserInfo.getDefaults(UserInfo.FIRST_NAME,"Guest",this) + " " + UserInfo.getDefaults(UserInfo.LAST_NAME,"",this));
 
-        usernameWelcoming.setText(UserInfo.userTeam +" Tasks");
+        usernameWelcoming.setText(UserInfo.getDefaults(UserInfo.USER_TEAM,UserInfo.getDefaults(UserInfo.FIRST_NAME,"Guest",this),this));
     }
-
-    private void initializeData() {
-
-
-        theUserTeamId = SplashActivity.teamsList.stream().filter(team ->
-                team.getName().equals(theUserTeamString)).collect(Collectors.toList()).get(0).getId();
-        tasksList = tasksList.stream().filter(task -> task.getTeamTasksId().equals(theUserTeamId)).collect(Collectors.toList());
-
-
-        switch (selectedItem) {
-            case "New":
-            case "Assigned":
-            case "In progress":
-            case "Completed":
-                tasksList = tasksList.stream().filter(task -> task.getStatus().equals(selectedItem)).collect(Collectors.toList());
-                break;
-            default:
-
-        }
-    }
-
-
 
     private void getTasksListToHomePage() {
 
-        initializeData();
 
-        ListView listViewTasksList = findViewById(R.id.list_tasks_main);
+        customListRecyclerViewAdapter = new CustomListRecyclerViewAdapter(tasksList, new CustomListRecyclerViewAdapter.CustomClickListener() {
 
-        ArrayAdapter<Task> taskDataArrayAdapter = new ArrayAdapter<Task>(
-                this
-                , android.R.layout.simple_list_item_2
-                , android.R.id.text2
-                , tasksList) {
-            @NonNull
             @Override
-            public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-                View view = super.getView(position, convertView, parent);
-
-                TextView title = view.findViewById(android.R.id.text1);
-                TextView state = view.findViewById(android.R.id.text2);
-
-                /*
-                 * How to set the text style from java side
-                 * https://www.codegrepper.com/code-examples/whatever/make+text+bold+android+studio
-                 */
-                title.setTypeface(null, Typeface.BOLD);
-
-                title.setText(tasksList.get(position).getTitle());
-                state.setText(tasksList.get(position).getStatus());
-                return view;
+            public void onTaskClicked(int position) {
+                Intent intent = new Intent(getApplicationContext(), TaskDetailsActivity.class);
+                intent.putExtra("Position", tasksList.get(position).getId());
+                startActivity(intent);
             }
-        };
-        listViewTasksList.setAdapter(taskDataArrayAdapter);
-        listViewTasksList.setOnItemClickListener((adapterView, view, i, l) -> {
-            Intent intent = new Intent(getApplicationContext(), TaskDetailsActivity.class);
-            intent.putExtra("Position", tasksList.get(i).getId());
-            startActivity(intent);
         });
+
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(
+                this,
+                LinearLayoutManager.VERTICAL,
+                false);
+
+        taskRecyclerView.setLayoutManager(linearLayoutManager);
+        taskRecyclerView.setHasFixedSize(true);
+        taskRecyclerView.setAdapter(customListRecyclerViewAdapter);
     }
-
-
 
     private void setAdapterToStatesTaskArraySpinner() {
 
@@ -270,7 +231,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
                 selectedItem = adapterView.getItemAtPosition(i).toString();
-                initializeData();
+                //initializeData();
                 /*
                  * https://stackoverflow.com/questions/3053761/reload-activity-in-android
                  * how to refresh the activity
@@ -292,17 +253,10 @@ public class MainActivity extends AppCompatActivity {
          */
         floatAddTaskButton = findViewById(R.id.add_task_button_floating);
         loadingDialog = new LoadingDialog(MainActivity.this);
-
-        TextView loadingText = findViewById(R.id.text_view_in_loading_progress);
+        taskRecyclerView = findViewById(R.id.recycler_view);
     }
 
-    private void setTheUserTeamString(){
-       theUserTeamString =  UserInfo.userTeam;
-        System.out.println("The user team after set is -> "+theUserTeamString);
-    }
-
-
-    private void signOut(){
+    private void signOut() {
 
         Amplify.Auth.signOut(
                 () -> {
@@ -317,5 +271,46 @@ public class MainActivity extends AppCompatActivity {
         );
     }
 
+    private void onlineFetchTasksData() {
 
+        Amplify.API.query(
+                ModelQuery.list(Task.class, Task.TEAM_TASKS_ID.eq(UserInfo.getDefaults(UserInfo.USER_TEAM_ID,null,this))),
+                tasks -> {
+                    tasksList.clear();
+                    if (tasks.hasData()) {
+                        for (Task task : tasks.getData()) {
+                            tasksList.add(task);
+                        }
+                    }
+                    runOnUiThread(() -> {
+                        customListRecyclerViewAdapter.notifyDataSetChanged();
+                    });
+                },
+                error -> {
+                    Log.e(TAG, error.toString());
+                    Toast.makeText(this, "Error in data sync from cloud", Toast.LENGTH_SHORT).show();
+                }
+        );
+    }
+
+    private void offlineFetchTasksData() {
+
+        Amplify.DataStore.query(Task.class,
+                allTasks -> {
+                    tasksList.clear();
+                    while (allTasks.hasNext()) {
+                        Task task = allTasks.next();
+                        Log.i(TAG, "Title: " + task.getTitle());
+                        tasksList.add(task);
+                    }
+                    runOnUiThread(() -> {
+                        customListRecyclerViewAdapter.notifyDataSetChanged();
+                    });
+                },
+                failure -> {
+                    Log.e(TAG, "Query failed.", failure);
+                    Toast.makeText(this, "Error in data sync from local", Toast.LENGTH_SHORT).show();
+                }
+        );
+    }
 }

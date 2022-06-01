@@ -59,6 +59,7 @@ public class AddTaskActivity extends AppCompatActivity {
     private EditText taskDescription;
 
     private Spinner taskState;
+    private Spinner taskTeamSpinner;
 
     private TextView totalTask;
 
@@ -70,6 +71,7 @@ public class AddTaskActivity extends AppCompatActivity {
     private String taskStateString;
     private File file;
 
+    @SuppressLint("WrongThread")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -88,6 +90,8 @@ public class AddTaskActivity extends AppCompatActivity {
         //manuallyInitializeTheTeams();
 
         buttonsAction();
+
+        handleSharedImageAndText();
     }
 
     private void getAllStringFormEditText() {
@@ -136,7 +140,6 @@ public class AddTaskActivity extends AppCompatActivity {
         spinner.setAdapter(adapter);
     }
 
-
     private void addTaskButtonAction() {
         if (TextUtils.isEmpty(taskTitle.getText()) || TextUtils.isEmpty(taskDescription.getText())) {
 
@@ -145,7 +148,7 @@ public class AddTaskActivity extends AppCompatActivity {
         } else {
             Toast.makeText(this, "Submitted!", Toast.LENGTH_SHORT).show();
             saveToCloudDB();
-            navigateToDetailsPage();
+            navigateToMainPage();
         }
 
         View view2 = this.getCurrentFocus();
@@ -171,9 +174,12 @@ public class AddTaskActivity extends AppCompatActivity {
         taskDescription = findViewById(R.id.task_description_box);
         taskState = findViewById(R.id.task_states_spinner);
         totalTask = findViewById(R.id.tasks_count);
+        taskTeamSpinner = findViewById(R.id.task_team_spinner);
+        taskTeamSpinner.setSelection(0);
+        taskTeamSpinner.setEnabled(false);
     }
 
-    private void navigateToDetailsPage() {
+    private void navigateToMainPage() {
 
         Intent intent = new Intent(this, MainActivity.class);
         intent.putExtra(TASK_ID, task.getId());
@@ -217,7 +223,8 @@ public class AddTaskActivity extends AppCompatActivity {
     private void saveToCloudDB() {
 
         // Lab 32 \\
-        Team team1 = SplashActivity.teamsList.stream().filter(team -> team.getName().equals("First Team")).collect(Collectors.toList()).get(0);
+        Team team1 = SplashActivity.teamsList.stream().filter(team -> team.getName().equals("First Team")).
+                collect(Collectors.toList()).get(0);
 
 //        Team team2 = Team.builder().name("Second Team").build();
 //        Team team3 = Team.builder().name("Third Team").build();
@@ -235,13 +242,19 @@ public class AddTaskActivity extends AppCompatActivity {
                 success -> {
                     Amplify.DataStore.save(task,
                             savedTask -> {
-                                Log.i("Task in add task page ", team1.getId());
+                                Log.i(TAG, "Task in add task page " + team1.getId());
                             },
-                            failure -> Log.e("ask in add task page", "Task not saved.", failure)
+                            failure -> {
+                                Log.e(TAG, "Task not saved.", failure);
+                                Toast.makeText(this, "Something went wrong!", Toast.LENGTH_SHORT).show();
+                            }
                     );
                     Log.i(TAG, "Team in add task page " + success.item().getName());
                 },
-                error -> Log.e(TAG, "Could not save item to DataStore ", error)
+                error -> {
+                    Log.e(TAG, "Could not save item to DataStore ", error);
+                    Toast.makeText(this, "Something went wrong!", Toast.LENGTH_SHORT).show();
+                }
         );
 
         // API save to backend
@@ -251,17 +264,21 @@ public class AddTaskActivity extends AppCompatActivity {
                             uploadImage();
                             Log.i(TAG, "Task saved to team from API => " + successTask.getData().getId());
                         },
-                        failure -> Log.i(TAG, "Task not saved to the team from API => ")),
-                error -> Log.e(TAG, "Could not save team to API ", error)
+                        failure -> {
+                            Log.i(TAG, "Task not saved to the team from API => ");
+                            Toast.makeText(this, "Something went wrong!", Toast.LENGTH_SHORT).show();
+                        }),
+                error -> {
+                    Log.e(TAG, "Could not save team to API ", error);
+                    Toast.makeText(this, "Something went wrong!", Toast.LENGTH_SHORT).show();
+                }
         );
-        MainActivity.tasksList.add(task);
-
         /*
          * https://stackoverflow.com/questions/66576755/io-reactivex-exceptions-undeliverableexception-the-exception-could-not-be-delive
          */
+        MainActivity.tasksList.add(task);
         RxJavaPlugins.setErrorHandler(e -> {
         });
-        navigateToDetailsPage();
     }
 
 
@@ -286,7 +303,6 @@ public class AddTaskActivity extends AppCompatActivity {
         addTaskButton.setOnClickListener(view -> {
             getAllStringFormEditText();
             addTaskButtonAction();
-
         });
         uploadImageButton.setOnClickListener(view -> {
             bringPhotoFromGallery();
@@ -314,28 +330,33 @@ public class AddTaskActivity extends AppCompatActivity {
         }
 
         if (requestCode == REQUEST_CODE) {// Get photo picker response for single select.
-            Uri currentUri = data.getData();
+            Uri dataUri = data.getData();
+            convertBitmapToFile(dataUri);
 
             // Do stuff with the photo/video URI.
-            try {
-
-                Bitmap bitmap = getBitmapFromUri(currentUri);
-                if (taskTitleString==null && taskTitle.getText().toString()!=null)
-                    taskTitleString = taskTitle.getText().toString();
-                else
-                    taskTitleString = "Task";
-                taskImageKey = taskTitleString.toLowerCase().replace(" ","_") + "_" + generateRandomString(10).toLowerCase();
-                file = new File(getApplicationContext().getFilesDir(), taskImageKey+".jpg");
-                OutputStream os = new BufferedOutputStream(new FileOutputStream(file));
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, os);
-                os.close();
-
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            Toast.makeText(this, "The URI is => " + currentUri, Toast.LENGTH_SHORT).show();
-            return;
         }
+    }
+
+    private void convertBitmapToFile(Uri currentUri){
+
+        try {
+
+            Bitmap bitmap = getBitmapFromUri(currentUri);
+            if (taskTitleString == null && taskTitle.getText().toString() != null)
+                taskTitleString = taskTitle.getText().toString();
+            else
+                taskTitleString = "Task";
+            taskImageKey = taskTitleString.toLowerCase().replace(" ", "_") + "_" + generateRandomString(10).toLowerCase();
+            file = new File(getApplicationContext().getFilesDir(), taskImageKey + ".jpg");
+            OutputStream os = new BufferedOutputStream(new FileOutputStream(file));
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, os);
+            os.close();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        //Toast.makeText(this, "The URI is => " + currentUri, Toast.LENGTH_SHORT).show();
+        return;
     }
 
     private void uploadImage() {
@@ -372,5 +393,22 @@ public class AddTaskActivity extends AppCompatActivity {
             sb.append(chars.charAt(rnd.nextInt(chars.length())));
         return sb.toString();
     }
+
+    private void handleSharedImageAndText(){
+
+        Intent intent = getIntent();
+        String type = intent.getType();
+
+        if (Intent.ACTION_SEND.equals(intent.getAction()) && type != null) {
+            if ("text/plain".equals(type)) {
+                Log.i(TAG, "handleSendText: Type => " + type);
+                taskDescription.setText(intent.getStringExtra(Intent.EXTRA_TEXT));
+            } else if (type.startsWith("image/")) {
+                Log.i(TAG, "handleSendImage: Type => " + type);
+                convertBitmapToFile(intent.getParcelableExtra(Intent.EXTRA_STREAM));
+            }
+        }
+    }
+
 
 }

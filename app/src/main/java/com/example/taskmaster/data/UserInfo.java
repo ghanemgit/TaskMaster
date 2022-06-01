@@ -7,20 +7,19 @@ import android.preference.PreferenceManager;
 
 import androidx.annotation.RequiresApi;
 
-import com.amplifyframework.auth.AuthUserAttribute;
-import com.example.taskmaster.Auth.SignUpActivity;
-import com.example.taskmaster.ui.SettingActivity;
 import com.example.taskmaster.ui.SplashActivity;
 
-import java.util.List;
+import java.util.Objects;
 
 @RequiresApi(api = Build.VERSION_CODES.N)
 public class UserInfo {
 
+    public static String USER_TEAM_ID = "Team id";
     public static String email;
     public static String firstName;
     public static String lastName;
     public static String userTeam;
+    public static String userTeamId;
     public static String password;
 
     public static final String EMAIL = "email";
@@ -52,10 +51,19 @@ public class UserInfo {
         preferenceEditor.apply();
         preferenceEditor.putString(USER_TEAM, userTeam);
         preferenceEditor.apply();
+        preferenceEditor.putString(USER_TEAM_ID, userTeamId);
+        preferenceEditor.apply();
+        preferenceEditor.putString(USER_TEAM_ID,getUserTeamId());
+        preferenceEditor.apply();
     }
 
-    public static String getDefaults(String key, Context context) {
+    public static String getDefaults(String key, String ifNotPresent, Context context) {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
-        return preferences.getString(key, null);
+        return preferences.getString(key, ifNotPresent);
     }
+
+    private static String getUserTeamId(){
+        return SplashActivity.teamsList.stream().filter(team -> Objects.equals(team.getName(), userTeam)).findFirst().get().getId();
+    }
+
 }

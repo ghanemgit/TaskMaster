@@ -52,16 +52,15 @@ public class UserDetailsActivity extends AppCompatActivity {
 
     private void getInfoFromUserInfoClass(){
 
-        firstName = UserInfo.firstName;
-        lastName = UserInfo.lastName;
-        email = UserInfo.email;
-        team = UserInfo.userTeam;
+        firstName = UserInfo.getDefaults(UserInfo.FIRST_NAME,"Guest",this);
+        lastName = UserInfo.getDefaults(UserInfo.LAST_NAME,"",this);
+        email = UserInfo.getDefaults(UserInfo.EMAIL,null,this);
+        team = UserInfo.getDefaults(UserInfo.USER_TEAM,"No team",this);
         noOfTasks = getIntent().getIntExtra("tasksListSize",5);
     }
 
     @SuppressLint("SetTextI18n")
     private void setTheCardInfo(){
-
 
         textView.setText("  Full name: "+firstName+" "+lastName);
         textView2.setText("  Email: "+email);

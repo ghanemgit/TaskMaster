@@ -1,17 +1,21 @@
 package com.example.taskmaster.ui;
 
 import android.annotation.SuppressLint;
+import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -25,6 +29,7 @@ import com.example.taskmaster.R;
 import java.io.File;
 import java.util.Objects;
 import java.util.stream.Collectors;
+
 @RequiresApi(api = Build.VERSION_CODES.N)
 @SuppressLint("SetTextI18n")
 public class TaskDetailsActivity extends AppCompatActivity {
@@ -32,7 +37,7 @@ public class TaskDetailsActivity extends AppCompatActivity {
     private static final String TAG = TaskDetailsActivity.class.getSimpleName();
     private ImageView taskImageView;
     private Task currentTask = null;
-    private Task taskFromAddTaskPage=null;
+    private Task taskFromAddTaskPage = null;
     private String teamName = "";
     private String downloadedImagePath;
     private TextView state;
@@ -78,6 +83,44 @@ public class TaskDetailsActivity extends AppCompatActivity {
 
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.task_details_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == R.id.share_task_details) {
+            shareButtonAction();
+            return true;
+
+        } else {
+            return super.onOptionsItemSelected(item);
+        }
+    }
+
+    private void shareButtonAction() {
+        // Create the text message with a string.
+        Intent sendIntent = new Intent();
+        sendIntent.setAction(Intent.ACTION_SEND);
+        sendIntent.putExtra(Intent.EXTRA_TEXT, "I want to share");
+        sendIntent.setType("text/plain");
+        Intent chooser = Intent.createChooser(sendIntent,"");
+
+        // Verify the original intent will resolve to at least one activity
+        if (sendIntent.resolveActivity(getPackageManager()) != null) {
+            startActivity(chooser);
+        }
+
+        // Try to invoke the intent.
+//        try {
+//            startActivity(sendIntent);
+//        } catch (ActivityNotFoundException e) {
+//            // Define what your app should do if no activity can handle the intent.
+//        }
+    }
+
     private void findAllViewById() {
         state = findViewById(R.id.task_state_in_details_page);
         body = findViewById(R.id.task_body_in_details_page);
@@ -90,17 +133,17 @@ public class TaskDetailsActivity extends AppCompatActivity {
     private void loadTaskInfoFromMain() {
 
 
-            currentTask = MainActivity.tasksList.stream().filter(task1 -> task1.getId().equals(getIntent().getStringExtra("Position"))).collect(Collectors.toList()).get(0);
+        currentTask = MainActivity.tasksList.stream().filter(task1 -> task1.getId().equals(getIntent().getStringExtra("Position"))).collect(Collectors.toList()).get(0);
 
-            Task finalCurrentTask = currentTask;
+        Task finalCurrentTask = currentTask;
 
-            teamName = SplashActivity.teamsList.stream().filter(team1 -> team1.getId().equals(finalCurrentTask.getTeamTasksId())).collect(Collectors.toList()).get(0).getName();
+        teamName = SplashActivity.teamsList.stream().filter(team1 -> team1.getId().equals(finalCurrentTask.getTeamTasksId())).collect(Collectors.toList()).get(0).getName();
     }
 
 
-    private void showTheImageInThePage(){
+    private void showTheImageInThePage() {
 
-        Bitmap bMap = BitmapFactory.decodeFile(downloadedImagePath+currentTask.getTaskImageCode()+".jpg");
+        Bitmap bMap = BitmapFactory.decodeFile(downloadedImagePath + currentTask.getTaskImageCode() + ".jpg");
         taskImageView.setImageBitmap(bMap);
     }
 
@@ -142,18 +185,19 @@ public class TaskDetailsActivity extends AppCompatActivity {
                     if (matches.hasNext()) {
                         Task task = matches.next();
                         Amplify.DataStore.delete(task,
-                                deleted -> Log.i("MyAmplifyApp", "Deleted a task."),
-                                failure -> Log.e("MyAmplifyApp", "Delete failed.", failure)
+                                deleted -> Log.i(TAG, "Deleted a task."),
+                                failure -> Log.e(TAG, "Delete failed.", failure)
                         );
                     }
                 },
-                failure -> Log.e("MyAmplifyApp", "Query failed.", failure)
+                failure -> Log.e(TAG, "Query failed.", failure)
         );
 
         Amplify.API.mutate(ModelMutation.delete(currentTask),
-                response -> Log.i("MyAmplifyApp", "Todo with id: "),
-                error -> Log.e("MyAmplifyApp", "Create failed", error)
+                response -> Log.i(TAG, "Todo with id: "),
+                error -> Log.e(TAG, "Create failed", error)
         );
+
 
     }
 
@@ -179,7 +223,7 @@ public class TaskDetailsActivity extends AppCompatActivity {
 
                     downloadedImagePath = result.getFile().getPath();
                 },
-                error -> Log.e(TAG,  "Download Failure", error)
+                error -> Log.e(TAG, "Download Failure", error)
         );
     }
 }

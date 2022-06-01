@@ -6,12 +6,19 @@
 
 
 
+# Day 11
+#### Today I learned how to share content from my application to other applications, and how to share stream to from other application to my application all that done by use the intent and its services, In addition I learned how to share text from any other application and send it to my application.
+### Here is some GIF files to see my work today you can see it [here](ScreenShot/11thDay/Day11.md)
+### Go directly to the edited activity [here](app/src/main/java/com/example/taskmaster/ui/AddTaskActivity.java)
+
+
+
+
+
 # Day 10
 #### Today I learned how to start work with storage in aws (S3) storage how to start configure it and add it in gradle build file In addition I learned how to upload file to s3 storage and how to delay with the key of image and connect it with the task, also I learned how to convert the the image to bitmap then to file to prepare it to upload process After that I started to applied function the function that responsible on download the files and pass the key for it to get specific file and I used generate random string method to naming the key of files. 
 ### Here is some screenshot to see  my work today you can see it [here](ScreenShot/10thDay/Day10.md)
 ### Go directly to the activities package [here](app/src/main/java/com/example/taskmaster/ui)
-
-
 
 
 # Day 9

@@ -1,6 +1,7 @@
 package com.example.taskmaster.ui;
 
 
+import android.annotation.SuppressLint;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -35,18 +36,13 @@ public class CustomListRecyclerViewAdapter extends RecyclerView.Adapter<CustomLi
         View listItemView = layoutInflater.inflate(R.layout.task_item_layout, parent, false);
 
         return new CustomViewHolder(listItemView, listener);
-
     }
 
     @Override
     public void onBindViewHolder(@NonNull CustomViewHolder holder, int position) {
 
         holder.title.setText(dataList.get(position).getTitle());
-        holder.body.setText(dataList.get(position).getDescription());
         holder.state.setText(dataList.get(position).getStatus());
-
-
-
     }
 
     @Override
@@ -57,21 +53,18 @@ public class CustomListRecyclerViewAdapter extends RecyclerView.Adapter<CustomLi
     public static class CustomViewHolder extends RecyclerView.ViewHolder {
 
         TextView title;
-        TextView body;
         TextView state;
 
-
-
+        CustomClickListener listener;
 
 
         public CustomViewHolder(@NonNull View itemView, CustomClickListener listener) {
             super(itemView);
 
+            this.listener = listener;
+
             title = itemView.findViewById(R.id.title);
-            body = itemView.findViewById(R.id.body);
             state = itemView.findViewById(R.id.state);
-
-
 
             itemView.setOnClickListener(view -> listener.onTaskClicked(getAdapterPosition()));
 
