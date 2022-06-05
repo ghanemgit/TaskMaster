@@ -9,6 +9,7 @@ mutation CreateTask(
     description
     status
     taskImageCode
+    coordinates
     createdAt
     updatedAt
     _version
@@ -27,6 +28,7 @@ mutation UpdateTask(
     description
     status
     taskImageCode
+    coordinates
     createdAt
     updatedAt
     _version
@@ -45,6 +47,7 @@ mutation DeleteTask(
     description
     status
     taskImageCode
+    coordinates
     createdAt
     updatedAt
     _version
@@ -109,6 +112,7 @@ mutation CreateTeam(
         description
         status
         taskImageCode
+        coordinates
         createdAt
         updatedAt
         _version
@@ -140,6 +144,7 @@ mutation UpdateTeam(
         description
         status
         taskImageCode
+        coordinates
         createdAt
         updatedAt
         _version
@@ -171,6 +176,7 @@ mutation DeleteTeam(
         description
         status
         taskImageCode
+        coordinates
         createdAt
         updatedAt
         _version

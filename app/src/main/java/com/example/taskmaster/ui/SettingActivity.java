@@ -147,23 +147,17 @@ public class SettingActivity extends AppCompatActivity {
 
         alert.setView(edittext);
 
-        alert.setPositiveButton(Html.fromHtml("<font color='#FF0000'>ok</font>"), new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int whichButton) {
-                if (edittext.getText().toString().equals(random+"")){
-                    deleteAccount();
-                    navigateToLoginPage();
-                    finish();
-                }else {
-                    deleteAccountAlertDialog();
-                }
+        alert.setPositiveButton(Html.fromHtml("<font color='#FF0000'>ok</font>"), (dialog, whichButton) -> {
+            if (edittext.getText().toString().equals(random+"")){
+                deleteAccount();
+                navigateToLoginPage();
+                finish();
+            }else {
+                deleteAccountAlertDialog();
             }
         });
 
-        alert.setNegativeButton("cancel", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int whichButton) {
-                onResume();
-            }
-        });
+        alert.setNegativeButton("cancel", (dialog, whichButton) -> onResume());
 
         alert.show();
     }

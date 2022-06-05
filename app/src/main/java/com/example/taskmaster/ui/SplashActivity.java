@@ -41,15 +41,16 @@ public class SplashActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
 
-        configureAmplify();
+        configureAmplify(this);
         Log.i(TAG, "Is online -> "+isOnline());
         if (isOnline()) {
-            onlineFetchTeamsData();
+            onlineFetchTeamsData(this);
+            deleteDataStoreContent();
             checkTheSession();
         } else {
-            offlineFetchTeamsData();
+            offlineFetchTeamsData(this);
             Toast.makeText(this, "No Internet connection!!", Toast.LENGTH_SHORT).show();
-            navigateToLoginPage();
+            navigateToMainActivity();
         }
         splashScreenLaunch();
     }
@@ -60,14 +61,14 @@ public class SplashActivity extends AppCompatActivity {
         Log.i(TAG, "onDestroy: called");
     }
 
-    private void configureAmplify() {
+    public static void configureAmplify(Context context) {
         try {
             Amplify.addPlugin(new AWSDataStorePlugin());
             Amplify.addPlugin(new AWSApiPlugin());
             // Add this line, to include the Auth plugin.
             Amplify.addPlugin(new AWSCognitoAuthPlugin());
             Amplify.addPlugin(new AWSS3StoragePlugin());
-            Amplify.configure(getApplicationContext());
+            Amplify.configure(context);
         } catch (AmplifyException error) {
             Log.e(TAG, "Could not initialize Amplify", error);
         }
@@ -80,7 +81,7 @@ public class SplashActivity extends AppCompatActivity {
         return netInfo != null && netInfo.isConnectedOrConnecting();
     }
 
-    public void onlineFetchTeamsData() {
+    public static void onlineFetchTeamsData(Context context) {
 
         Amplify.API.query(
                 ModelQuery.list(Team.class),
@@ -95,8 +96,22 @@ public class SplashActivity extends AppCompatActivity {
                 },
                 error -> {
                     Log.e(TAG, error.toString());
-                    Toast.makeText(this, "Error in data sync from cloud", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, "Error in data sync from cloud", Toast.LENGTH_SHORT).show();
                 }
+        );
+    }
+
+    private void deleteDataStoreContent(){
+
+        Amplify.DataStore.clear(
+                () -> Amplify.DataStore.start(
+                        () -> {
+                            Log.i(TAG, "DataStore Cleared");
+                            Log.i(TAG, "DataStore started");
+                        },
+                        error -> Log.e(TAG, "Error starting DataStore: ", error)
+                ),
+                failure -> Log.e(TAG, "Failed to clear DataStore.")
         );
     }
 
@@ -118,7 +133,7 @@ public class SplashActivity extends AppCompatActivity {
         );
     }
 
-    public void offlineFetchTeamsData() {
+    public static void offlineFetchTeamsData(Context context) {
 
         Amplify.DataStore.query(Team.class,
                 allTeams -> {
@@ -131,7 +146,7 @@ public class SplashActivity extends AppCompatActivity {
                 },
                 failure -> {
                     Log.e(TAG, "Query failed.", failure);
-                    Toast.makeText(this, "Error in data sync from local", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, "Error in data sync from local", Toast.LENGTH_SHORT).show();
                 }
         );
     }

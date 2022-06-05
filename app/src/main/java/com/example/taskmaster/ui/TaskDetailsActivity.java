@@ -1,12 +1,18 @@
 package com.example.taskmaster.ui;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
-import android.content.ActivityNotFoundException;
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.location.Location;
+import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Looper;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -19,6 +25,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.cardview.widget.CardView;
+import androidx.core.app.ActivityCompat;
 
 import com.amplifyframework.api.graphql.model.ModelMutation;
 import com.amplifyframework.core.Amplify;
@@ -26,25 +34,50 @@ import com.amplifyframework.core.model.query.Where;
 import com.amplifyframework.datastore.generated.model.Task;
 import com.example.taskmaster.R;
 
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.CameraPosition;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
+
 import java.io.File;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
 @RequiresApi(api = Build.VERSION_CODES.N)
-@SuppressLint("SetTextI18n")
-public class TaskDetailsActivity extends AppCompatActivity {
+@SuppressLint({"SetTextI18n", "MissingPermission", "WrongThread"})
+public class TaskDetailsActivity extends AppCompatActivity implements OnMapReadyCallback {
 
     private static final String TAG = TaskDetailsActivity.class.getSimpleName();
+
     private ImageView taskImageView;
-    private Task currentTask = null;
-    private Task taskFromAddTaskPage = null;
-    private String teamName = "";
-    private String downloadedImagePath;
-    private TextView state;
-    private TextView body;
-    private TextView team;
-    private Button deleteButton;
-    private Button editButton;
+
+    private Task currentTask = null, taskFromAddTaskPage = null;
+
+    private String teamName = "", downloadedImagePath;
+
+    private TextView state, body, team, latitudeTextView, longitudeTextView;
+
+    private CardView mapCardView;
+
+    private final int PERMISSION_ID = 44;
+
+    private Button deleteButton, editButton;
+
+    private double latitude, longitude;
+
+    private GoogleMap googleMap;
+
+    private FusedLocationProviderClient mFusedLocationProviderClient;
+
 
 
     @Override
@@ -56,15 +89,121 @@ public class TaskDetailsActivity extends AppCompatActivity {
 
         loadTaskInfoFromMain();
 
+        prepareGoogleMaps();
+
         setTextForTaskView();
 
-        editButton.setOnClickListener(view -> editTask());
+        setOnClickListeners();
 
-        deleteButton.setOnClickListener(view -> deleteTaskButtonAction());
 
-        imageDownload();
+        if (currentTask.getTaskImageCode() != null) {
+            imageDownload();
+            showTheImageInThePage();
+        }
 
-        showTheImageInThePage();
+
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.i(TAG, "onResume: Called");
+
+    }
+
+    @Override
+    public void onMapReady(@NonNull GoogleMap googleMap) {
+        this.googleMap = googleMap;
+        prepareGoogleMaps();
+    }
+
+    private void prepareGoogleMaps() {
+
+        mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+
+        //method to get the location
+        getLastLocation();
+
+        //get a handle to the fragment and register the callback
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().
+                findFragmentById(R.id.location_fragment);
+        mapFragment.getMapAsync(this);
+    }
+
+    private void getLastLocation() {
+        //check if the permission is given
+        if (checkPermissions()) {
+            if (isLocationEnabled()) {
+                //get last location from FusedLocationClient object
+                mFusedLocationProviderClient.getLastLocation().addOnCompleteListener(new OnCompleteListener<Location>() {
+                    @Override
+                    public void onComplete(@NonNull com.google.android.gms.tasks.Task<Location> task) {
+                        Location location = task.getResult();
+
+                        // the index 0 represent the latitude and the index 1 represent the longitude in coordinate list
+                        latitude = Double.parseDouble(currentTask.getCoordinates().get(0));
+                        longitude = Double.parseDouble(currentTask.getCoordinates().get(1));
+
+
+
+                        Log.i(TAG, "onComplete: The latitude and longitude is -> " + location.getLatitude() + "-> " + location.getLongitude());
+                        Log.i(TAG, "Google map is -> "+googleMap);
+                        googleMap.addMarker(new MarkerOptions()
+                                .position(new LatLng(latitude, longitude))
+                                .title("Marker"));
+                    }
+                });
+
+            } else {
+                Toast.makeText(this, "Please turn on your location....", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                startActivity(intent);
+            }
+        } else {
+            // if permission arent available request for permission
+            requestPermission();
+        }
+    }
+
+    private boolean checkPermissions() {
+
+        return ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED
+                &&
+                ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                        == PackageManager.PERMISSION_GRANTED;
+
+        /*
+         * If you want a background location in android 10 and higher use
+         * Manifest.permission.ACCESS_BACKGROUND_LOCATION
+         */
+    }
+
+    private boolean isLocationEnabled() {
+
+        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+
+        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
+                locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+
+    }
+
+    private void requestPermission() {
+
+        ActivityCompat.requestPermissions(this, new String[]{
+                Manifest.permission.ACCESS_COARSE_LOCATION,
+                Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_ID);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == PERMISSION_ID) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                getLastLocation();
+            }
+        }
     }
 
     public void setActionBarTitleButton(String title) {
@@ -106,7 +245,7 @@ public class TaskDetailsActivity extends AppCompatActivity {
         sendIntent.setAction(Intent.ACTION_SEND);
         sendIntent.putExtra(Intent.EXTRA_TEXT, "I want to share");
         sendIntent.setType("text/plain");
-        Intent chooser = Intent.createChooser(sendIntent,"");
+        Intent chooser = Intent.createChooser(sendIntent, "");
 
         // Verify the original intent will resolve to at least one activity
         if (sendIntent.resolveActivity(getPackageManager()) != null) {
@@ -128,6 +267,19 @@ public class TaskDetailsActivity extends AppCompatActivity {
         deleteButton = findViewById(R.id.delete_button);
         editButton = findViewById(R.id.edit_button);
         taskImageView = findViewById(R.id.task_image);
+        mapCardView = findViewById(R.id.location_card_view);
+    }
+
+    private void setOnClickListeners() {
+
+        editButton.setOnClickListener(view -> editTask());
+
+        deleteButton.setOnClickListener(view -> deleteTaskButtonAction());
+
+        mapCardView.setOnClickListener(view -> {
+
+        });
+
     }
 
     private void loadTaskInfoFromMain() {
@@ -140,13 +292,11 @@ public class TaskDetailsActivity extends AppCompatActivity {
         teamName = SplashActivity.teamsList.stream().filter(team1 -> team1.getId().equals(finalCurrentTask.getTeamTasksId())).collect(Collectors.toList()).get(0).getName();
     }
 
-
     private void showTheImageInThePage() {
 
         Bitmap bMap = BitmapFactory.decodeFile(downloadedImagePath + currentTask.getTaskImageCode() + ".jpg");
         taskImageView.setImageBitmap(bMap);
     }
-
 
     private void setTextForTaskView() {
 
@@ -156,7 +306,6 @@ public class TaskDetailsActivity extends AppCompatActivity {
         team.setText("This task for => " + teamName);
         setActionBarTitleButton(currentTask.getTitle());
     }
-
 
     public void deleteTaskButtonAction() {
 
@@ -201,29 +350,30 @@ public class TaskDetailsActivity extends AppCompatActivity {
 
     }
 
-
     public void editTask() {
 
-        Intent intent = new Intent(TaskDetailsActivity.this, UpdateActivity.class);
+        Intent intent = new Intent(TaskDetailsActivity.this, UpdateTaskActivity.class);
         intent.putExtra("Id", currentTask.getId());
         startActivity(intent);
     }
 
-
     @SuppressLint("SdCardPath")
     private void imageDownload() {
         downloadedImagePath = "/data/data/com.example.taskmaster/files/";
+        File file = new File(downloadedImagePath);
+        Log.i(TAG, "imageDownload: is the file exist -> " + file.exists());
+        if (!file.exists()) {
+            Amplify.Storage.downloadFile(
+                    currentTask.getTaskImageCode(),
+                    file,
+                    result -> {
+                        Log.i(TAG, "The root path is: " + getApplicationContext().getFilesDir());
+                        Log.i(TAG, "Successfully downloaded: " + result.getFile().getName());
 
-        Amplify.Storage.downloadFile(
-                currentTask.getTaskImageCode(),
-                new File(downloadedImagePath),
-                result -> {
-                    Log.i(TAG, "The root path is: " + getApplicationContext().getFilesDir());
-                    Log.i(TAG, "Successfully downloaded: " + result.getFile().getName());
-
-                    downloadedImagePath = result.getFile().getPath();
-                },
-                error -> Log.e(TAG, "Download Failure", error)
-        );
+                        downloadedImagePath = result.getFile().getPath();
+                    },
+                    error -> Log.e(TAG, "Download Failure", error)
+            );
+        }
     }
 }

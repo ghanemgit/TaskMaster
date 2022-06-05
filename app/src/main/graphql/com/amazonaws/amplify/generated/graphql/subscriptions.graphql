@@ -6,6 +6,7 @@ subscription OnCreateTask {
     description
     status
     taskImageCode
+    coordinates
     createdAt
     updatedAt
     _version
@@ -21,6 +22,7 @@ subscription OnUpdateTask {
     description
     status
     taskImageCode
+    coordinates
     createdAt
     updatedAt
     _version
@@ -36,6 +38,7 @@ subscription OnDeleteTask {
     description
     status
     taskImageCode
+    coordinates
     createdAt
     updatedAt
     _version
@@ -88,6 +91,7 @@ subscription OnCreateTeam {
         description
         status
         taskImageCode
+        coordinates
         createdAt
         updatedAt
         _version
@@ -116,6 +120,7 @@ subscription OnUpdateTeam {
         description
         status
         taskImageCode
+        coordinates
         createdAt
         updatedAt
         _version
@@ -144,6 +149,7 @@ subscription OnDeleteTeam {
         description
         status
         taskImageCode
+        coordinates
         createdAt
         updatedAt
         _version

@@ -6,6 +6,7 @@ type Task @model {
   description: String
   status: String
   taskImageCode : String
+  coordinates: [String]
 }
 type Note @model {
   id: ID! @primaryKey

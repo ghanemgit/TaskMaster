@@ -25,9 +25,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RequiresApi(api = Build.VERSION_CODES.N)
-public class UpdateActivity extends AppCompatActivity {
+public class UpdateTaskActivity extends AppCompatActivity {
 
-    private static final String TAG = UpdateActivity.class.getSimpleName();
+    private static final String TAG = UpdateTaskActivity.class.getSimpleName();
     private Task newTask;
     private Team newTeam;
     private EditText taskTitle;
