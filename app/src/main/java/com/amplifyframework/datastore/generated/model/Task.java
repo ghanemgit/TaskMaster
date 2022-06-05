@@ -26,12 +26,14 @@ public final class Task implements Model {
   public static final QueryField DESCRIPTION = field("Task", "description");
   public static final QueryField STATUS = field("Task", "status");
   public static final QueryField TASK_IMAGE_CODE = field("Task", "taskImageCode");
+  public static final QueryField COORDINATES = field("Task", "coordinates");
   public static final QueryField TEAM_TASKS_ID = field("Task", "teamTasksId");
   private final @ModelField(targetType="ID", isRequired = true) String id;
   private final @ModelField(targetType="String", isRequired = true) String title;
   private final @ModelField(targetType="String") String description;
   private final @ModelField(targetType="String") String status;
   private final @ModelField(targetType="String") String taskImageCode;
+  private final @ModelField(targetType="String") List<String> coordinates;
   private @ModelField(targetType="AWSDateTime", isReadOnly = true) Temporal.DateTime createdAt;
   private @ModelField(targetType="AWSDateTime", isReadOnly = true) Temporal.DateTime updatedAt;
   private final @ModelField(targetType="ID") String teamTasksId;
@@ -55,6 +57,10 @@ public final class Task implements Model {
       return taskImageCode;
   }
   
+  public List<String> getCoordinates() {
+      return coordinates;
+  }
+  
   public Temporal.DateTime getCreatedAt() {
       return createdAt;
   }
@@ -67,12 +73,13 @@ public final class Task implements Model {
       return teamTasksId;
   }
   
-  private Task(String id, String title, String description, String status, String taskImageCode, String teamTasksId) {
+  private Task(String id, String title, String description, String status, String taskImageCode, List<String> coordinates, String teamTasksId) {
     this.id = id;
     this.title = title;
     this.description = description;
     this.status = status;
     this.taskImageCode = taskImageCode;
+    this.coordinates = coordinates;
     this.teamTasksId = teamTasksId;
   }
   
@@ -89,6 +96,7 @@ public final class Task implements Model {
               ObjectsCompat.equals(getDescription(), task.getDescription()) &&
               ObjectsCompat.equals(getStatus(), task.getStatus()) &&
               ObjectsCompat.equals(getTaskImageCode(), task.getTaskImageCode()) &&
+              ObjectsCompat.equals(getCoordinates(), task.getCoordinates()) &&
               ObjectsCompat.equals(getCreatedAt(), task.getCreatedAt()) &&
               ObjectsCompat.equals(getUpdatedAt(), task.getUpdatedAt()) &&
               ObjectsCompat.equals(getTeamTasksId(), task.getTeamTasksId());
@@ -103,6 +111,7 @@ public final class Task implements Model {
       .append(getDescription())
       .append(getStatus())
       .append(getTaskImageCode())
+      .append(getCoordinates())
       .append(getCreatedAt())
       .append(getUpdatedAt())
       .append(getTeamTasksId())
@@ -119,6 +128,7 @@ public final class Task implements Model {
       .append("description=" + String.valueOf(getDescription()) + ", ")
       .append("status=" + String.valueOf(getStatus()) + ", ")
       .append("taskImageCode=" + String.valueOf(getTaskImageCode()) + ", ")
+      .append("coordinates=" + String.valueOf(getCoordinates()) + ", ")
       .append("createdAt=" + String.valueOf(getCreatedAt()) + ", ")
       .append("updatedAt=" + String.valueOf(getUpdatedAt()) + ", ")
       .append("teamTasksId=" + String.valueOf(getTeamTasksId()))
@@ -145,6 +155,7 @@ public final class Task implements Model {
       null,
       null,
       null,
+      null,
       null
     );
   }
@@ -155,6 +166,7 @@ public final class Task implements Model {
       description,
       status,
       taskImageCode,
+      coordinates,
       teamTasksId);
   }
   public interface TitleStep {
@@ -168,6 +180,7 @@ public final class Task implements Model {
     BuildStep description(String description);
     BuildStep status(String status);
     BuildStep taskImageCode(String taskImageCode);
+    BuildStep coordinates(List<String> coordinates);
     BuildStep teamTasksId(String teamTasksId);
   }
   
@@ -178,6 +191,7 @@ public final class Task implements Model {
     private String description;
     private String status;
     private String taskImageCode;
+    private List<String> coordinates;
     private String teamTasksId;
     @Override
      public Task build() {
@@ -189,6 +203,7 @@ public final class Task implements Model {
           description,
           status,
           taskImageCode,
+          coordinates,
           teamTasksId);
     }
     
@@ -218,6 +233,12 @@ public final class Task implements Model {
     }
     
     @Override
+     public BuildStep coordinates(List<String> coordinates) {
+        this.coordinates = coordinates;
+        return this;
+    }
+    
+    @Override
      public BuildStep teamTasksId(String teamTasksId) {
         this.teamTasksId = teamTasksId;
         return this;
@@ -235,12 +256,13 @@ public final class Task implements Model {
   
 
   public final class CopyOfBuilder extends Builder {
-    private CopyOfBuilder(String id, String title, String description, String status, String taskImageCode, String teamTasksId) {
+    private CopyOfBuilder(String id, String title, String description, String status, String taskImageCode, List<String> coordinates, String teamTasksId) {
       super.id(id);
       super.title(title)
         .description(description)
         .status(status)
         .taskImageCode(taskImageCode)
+        .coordinates(coordinates)
         .teamTasksId(teamTasksId);
     }
     
@@ -262,6 +284,11 @@ public final class Task implements Model {
     @Override
      public CopyOfBuilder taskImageCode(String taskImageCode) {
       return (CopyOfBuilder) super.taskImageCode(taskImageCode);
+    }
+    
+    @Override
+     public CopyOfBuilder coordinates(List<String> coordinates) {
+      return (CopyOfBuilder) super.coordinates(coordinates);
     }
     
     @Override

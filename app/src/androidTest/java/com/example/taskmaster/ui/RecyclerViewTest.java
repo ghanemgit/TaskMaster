@@ -30,8 +30,8 @@ public class RecyclerViewTest {
 
 
     @Rule
-    public ActivityScenarioRule<RecyclerViewActivity> activityScenarioRule =
-            new ActivityScenarioRule<RecyclerViewActivity>(RecyclerViewActivity.class);
+    public ActivityScenarioRule<MainActivity> activityScenarioRule =
+            new ActivityScenarioRule<MainActivity>(MainActivity.class);
 
     @Test(expected = PerformException.class)
     public void itemWithText_doesNotExist() {

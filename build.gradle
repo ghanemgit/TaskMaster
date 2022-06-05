@@ -9,6 +9,8 @@ buildscript {
 
         // Add this line into `dependencies` in `buildscript`
         classpath 'com.amplifyframework:amplify-tools-gradle-plugin:1.0.2'
+        classpath "com.google.android.libraries.mapsplatform.secrets-gradle-plugin:secrets-gradle-plugin:2.0.1"
+
     }
 }
 plugins {

@@ -1,15 +1,21 @@
 package com.example.taskmaster.ui;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.location.Location;
+import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Looper;
 import android.os.ParcelFileDescriptor;
+import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
@@ -21,15 +27,27 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 
 import com.amplifyframework.api.graphql.model.ModelMutation;
 import com.amplifyframework.core.Amplify;
 import com.amplifyframework.datastore.generated.model.Task;
 import com.amplifyframework.datastore.generated.model.Team;
 import com.example.taskmaster.R;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -46,59 +64,209 @@ import java.util.stream.Collectors;
 import io.reactivex.rxjava3.plugins.RxJavaPlugins;
 
 @RequiresApi(api = Build.VERSION_CODES.N)
-@SuppressLint("SetTextI18n")
-public class AddTaskActivity extends AppCompatActivity {
-
-    private static final int REQUEST_CODE = 123;
-    public static final String TASK_ID = "TaskID";
-    private Task task;
-
+@SuppressLint({"SetTextI18n", "MissingPermission","WrongThread"})
+public class AddTaskActivity extends AppCompatActivity implements OnMapReadyCallback {
     private static final String TAG = AddTaskActivity.class.getSimpleName();
 
-    private EditText taskTitle;
-    private EditText taskDescription;
+    private static final int REQUEST_CODE = 123;
+    private final int PERMISSION_ID = 44;
+
+    private Task task;
+
+    private List<String> coordinatList = new ArrayList<>();
+
+    private EditText taskTitle,taskDescription;
 
     private Spinner taskState;
-    private Spinner taskTeamSpinner;
 
-    private TextView totalTask;
+    private Button addTaskButton,uploadImageButton;
 
-    private Button addTaskButton;
-    private Button uploadImageButton;
-    private String taskImageKey;
-    private String taskTitleString;
-    private String taskDescriptionString;
-    private String taskStateString;
+    public static final String TASK_ID = "TaskID";
+
+    private String taskImageKey,taskTitleString,taskDescriptionString,taskStateString;
+
     private File file;
 
-    @SuppressLint("WrongThread")
+    private boolean isFromMainActivity;
+
+    private double latitude, longitude;
+
+    private GoogleMap googleMap;
+
+    private FusedLocationProviderClient mFusedLocationProviderClient;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_task);
 
-        findAllViewsByIdMethod();
+        prepareGoogleMaps();
 
-//        saveTeamToLocalDB();
+        findAllViewsByIdMethod();
 
         backToPreviousButton();
 
         setAdapterToStatesTaskArraySpinner();
 
-        setAdapterToStatesTeamArraySpinner();
-
-        //manuallyInitializeTheTeams();
+        setAdapterToTeamArraySpinner();
 
         buttonsAction();
 
         handleSharedImageAndText();
+
+        if (!isFromMainActivity){
+        }
     }
 
-    private void getAllStringFormEditText() {
+    @Override
+    protected void onStart() {
+        super.onStart();
+        Log.i(TAG, "onStart: Called");
+    }
 
-        taskTitleString = taskTitle.getText().toString();
-        taskDescriptionString = taskDescription.getText().toString();
-        taskStateString = taskState.getSelectedItem().toString();
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.i(TAG, "onResume: Called");
+        if (!isFromMainActivity){
+        }
+        if (checkPermissions()) {
+            getLastLocation();
+        }
+    }
+
+    @Override
+    public void onMapReady(@NonNull GoogleMap googleMap) {
+        this.googleMap = googleMap;
+    }
+
+    private void prepareGoogleMaps() {
+
+        mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+
+        //method to get the location
+        getLastLocation();
+    }
+
+    private void getLastLocation() {
+        //check if the permission is given
+        if (checkPermissions()) {
+            if (isLocationEnabled()) {
+                //get last location from FusedLocationClient object
+                mFusedLocationProviderClient.getLastLocation().addOnCompleteListener(new OnCompleteListener<Location>() {
+                    @Override
+                    public void onComplete(@NonNull com.google.android.gms.tasks.Task<Location> task) {
+                        Location location = task.getResult();
+                        if (location == null) {
+                            requestNewLocationData();
+                        } else {
+
+                            latitude = location.getLatitude();
+                            longitude = location.getLongitude();
+
+                            // so the index 0 represent the latitude and the index 1 represent the longitude in coordinate list
+
+                            coordinatList.add(location.getLatitude()+"");
+                            coordinatList.add(location.getLongitude()+"");
+
+                        }
+                    }
+                });
+
+            } else {
+                Toast.makeText(this, "Please turn on your location....", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                startActivity(intent);
+            }
+        } else {
+            // if permission arent available request for permission
+            requestPermission();
+        }
+    }
+
+    private boolean checkPermissions() {
+
+        return ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED
+                &&
+                ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                        == PackageManager.PERMISSION_GRANTED;
+
+        /*
+         * If you want a background location in android 10 and higher use
+         * Manifest.permission.ACCESS_BACKGROUND_LOCATION
+         */
+    }
+
+    private boolean isLocationEnabled() {
+
+        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+
+        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
+                locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+
+    }
+
+    private void requestNewLocationData() {
+
+        LocationRequest mLocationRequest = new LocationRequest();
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        mLocationRequest.setInterval(5);
+        mLocationRequest.setFastestInterval(0);
+        mLocationRequest.setNumUpdates(1);
+
+        mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+        mFusedLocationProviderClient.requestLocationUpdates(mLocationRequest, mLocationCallBack, Looper.myLooper());
+
+    }
+
+    private LocationCallback mLocationCallBack = new LocationCallback() {
+        @Override
+        public void onLocationResult(@NonNull LocationResult locationResult) {
+            Location mLastLocation = locationResult.getLastLocation();
+//            latitudeTextView.setText("Latitude: " + mLastLocation.getLatitude());
+//            longitudeTextView.setText("Longitude : " + mLastLocation.getLongitude());
+
+        }
+    };
+
+    private void requestPermission() {
+
+        ActivityCompat.requestPermissions(this, new String[]{
+                Manifest.permission.ACCESS_COARSE_LOCATION,
+                Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_ID);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == PERMISSION_ID) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                getLastLocation();
+            }
+        }
+    }
+
+    private void findAllViewsByIdMethod() {
+
+        addTaskButton = findViewById(R.id.create_task_button);
+        uploadImageButton = findViewById(R.id.upload_photo_button);
+        taskTitle = findViewById(R.id.task_title_box);
+        taskDescription = findViewById(R.id.task_description_box);
+        taskState = findViewById(R.id.task_states_spinner);
+        TextView totalTask = findViewById(R.id.tasks_count);
+        Spinner taskTeamSpinner = findViewById(R.id.task_team_spinner);
+        taskTeamSpinner.setSelection(0);
+        taskTeamSpinner.setEnabled(false);
+    }
+
+    private void backToPreviousButton() {
+        /*
+        https://www.youtube.com/watch?v=FcPUFp8Qrps&ab_channel=LemubitAcademy
+        In this video I learned how to add back button in action bar
+        */
+        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
     }
 
     private void setAdapterToStatesTaskArraySpinner() {
@@ -117,7 +285,8 @@ public class AddTaskActivity extends AppCompatActivity {
         spinner.setAdapter(adapter);
     }
 
-    private void setAdapterToStatesTeamArraySpinner() {
+    private void setAdapterToTeamArraySpinner() {
+
 
         /*
         https://developer.android.com/guide/topics/ui/controls/spinner
@@ -140,173 +309,17 @@ public class AddTaskActivity extends AppCompatActivity {
         spinner.setAdapter(adapter);
     }
 
-    private void addTaskButtonAction() {
-        if (TextUtils.isEmpty(taskTitle.getText()) || TextUtils.isEmpty(taskDescription.getText())) {
-
-            taskTitle.setError("Title is Required");
-            taskDescription.setError("Description is required");
-        } else {
-            Toast.makeText(this, "Submitted!", Toast.LENGTH_SHORT).show();
-            saveToCloudDB();
-            navigateToMainPage();
-        }
-
-        View view2 = this.getCurrentFocus();
-        if (view2 != null) {
-            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-            imm.hideSoftInputFromWindow(view2.getWindowToken(), 0);
-        }
-    }
-
-    private void backToPreviousButton() {
-        /*
-        https://www.youtube.com/watch?v=FcPUFp8Qrps&ab_channel=LemubitAcademy
-        In this video I learned how to add back button in action bar
-        */
-        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
-    }
-
-    private void findAllViewsByIdMethod() {
-
-        addTaskButton = findViewById(R.id.create_task_button);
-        uploadImageButton = findViewById(R.id.upload_photo_button);
-        taskTitle = findViewById(R.id.taskTitleBox);
-        taskDescription = findViewById(R.id.task_description_box);
-        taskState = findViewById(R.id.task_states_spinner);
-        totalTask = findViewById(R.id.tasks_count);
-        taskTeamSpinner = findViewById(R.id.task_team_spinner);
-        taskTeamSpinner.setSelection(0);
-        taskTeamSpinner.setEnabled(false);
-    }
-
-    private void navigateToMainPage() {
-
-        Intent intent = new Intent(this, MainActivity.class);
-        intent.putExtra(TASK_ID, task.getId());
-        startActivity(intent);
-        finish();
-    }
-
-    private void manuallyInitializeTheTeams() {
-//        //Add the team to the task
-//        Team team1 = Team.builder()
-//                .name("First Team")
-//                .build();
-//        Amplify.DataStore.save(team1, pass -> {
-//                    Log.i(TAG, "Saved Task To the Team => " + pass.item().getName());
-//                },
-//                failure -> {
-//                    Log.e(TAG, "Could not save Team to Task ", failure);
-//                });
-//        //Add the team to the task
-//        Team team2 = Team.builder()
-//                .name("Second Team")
-//                .build();
-//        Amplify.DataStore.save(team2, pass -> {
-//                    Log.i(TAG, "Saved Task To the Team => " + pass.item().getName());
-//                },
-//                failure -> {
-//                    Log.e(TAG, "Could not save Team to Task ", failure);
-//                });
-//        //Add the team to the task
-//        Team team3 = Team.builder()
-//                .name("Third Team")
-//                .build();
-//        Amplify.DataStore.save(team3, pass -> {
-//                    Log.i(TAG, "Saved Task To the Team => " + pass.item().getName());
-//                },
-//                failure -> {
-//                    Log.e(TAG, "Could not save Team to Task ", failure);
-//                });
-    }
-
-    private void saveToCloudDB() {
-
-        // Lab 32 \\
-        Team team1 = SplashActivity.teamsList.stream().filter(team -> team.getName().equals("First Team")).
-                collect(Collectors.toList()).get(0);
-
-//        Team team2 = Team.builder().name("Second Team").build();
-//        Team team3 = Team.builder().name("Third Team").build();
-
-        task = Task.builder()
-                .title(taskTitleString)
-                .description(taskDescriptionString)
-                .status(taskStateString)
-                .teamTasksId(team1.getId())
-                .taskImageCode(taskImageKey)
-                .build();
-
-        // Data store save
-        Amplify.DataStore.save(team1,
-                success -> {
-                    Amplify.DataStore.save(task,
-                            savedTask -> {
-                                Log.i(TAG, "Task in add task page " + team1.getId());
-                            },
-                            failure -> {
-                                Log.e(TAG, "Task not saved.", failure);
-                                Toast.makeText(this, "Something went wrong!", Toast.LENGTH_SHORT).show();
-                            }
-                    );
-                    Log.i(TAG, "Team in add task page " + success.item().getName());
-                },
-                error -> {
-                    Log.e(TAG, "Could not save item to DataStore ", error);
-                    Toast.makeText(this, "Something went wrong!", Toast.LENGTH_SHORT).show();
-                }
-        );
-
-        // API save to backend
-        Amplify.API.mutate(ModelMutation.create(team1),
-                success -> Amplify.API.mutate(ModelMutation.create(task),
-                        successTask -> {
-                            uploadImage();
-                            Log.i(TAG, "Task saved to team from API => " + successTask.getData().getId());
-                        },
-                        failure -> {
-                            Log.i(TAG, "Task not saved to the team from API => ");
-                            Toast.makeText(this, "Something went wrong!", Toast.LENGTH_SHORT).show();
-                        }),
-                error -> {
-                    Log.e(TAG, "Could not save team to API ", error);
-                    Toast.makeText(this, "Something went wrong!", Toast.LENGTH_SHORT).show();
-                }
-        );
-        /*
-         * https://stackoverflow.com/questions/66576755/io-reactivex-exceptions-undeliverableexception-the-exception-could-not-be-delive
-         */
-        MainActivity.tasksList.add(task);
-        RxJavaPlugins.setErrorHandler(e -> {
-        });
-    }
-
-
-    private void saveTeamToLocalDB() {
-
-
-//        Task newTask = new Task(taskTitleString, taskDescriptionString, taskState);
-//        TaskDatabase.getInstance(getApplicationContext()).taskDao().insertTask(newTask);
-
-//        com.example.taskmaster.data.Team team1 = new com.example.taskmaster.data.Team("First Team");
-//        com.example.taskmaster.data.Team team2 = new com.example.taskmaster.data.Team("Second Team");
-//        com.example.taskmaster.data.Team team3 = new com.example.taskmaster.data.Team("Third Team");
-//
-//        TeamDatabase.getInstance(this).teamDao().insertTeam(team1);
-//        TeamDatabase.getInstance(this).teamDao().insertTeam(team2);
-//        TeamDatabase.getInstance(this).teamDao().insertTeam(team3);
-
-    }
-
     private void buttonsAction() {
+
+        uploadImageButton.setOnClickListener(view -> {
+            bringPhotoFromGallery();
+        });
 
         addTaskButton.setOnClickListener(view -> {
             getAllStringFormEditText();
             addTaskButtonAction();
         });
-        uploadImageButton.setOnClickListener(view -> {
-            bringPhotoFromGallery();
-        });
+
     }
 
     private void bringPhotoFromGallery() {
@@ -359,6 +372,114 @@ public class AddTaskActivity extends AppCompatActivity {
         return;
     }
 
+    public static String generateRandomString(int len) {
+        String chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijk"
+                + "lmnopqrstuvwxyz!@#$%&";
+        Random rnd = new Random();
+        StringBuilder sb = new StringBuilder(len);
+        for (int i = 0; i < len; i++)
+            sb.append(chars.charAt(rnd.nextInt(chars.length())));
+        return sb.toString();
+    }
+
+    private Bitmap getBitmapFromUri(Uri uri) throws IOException {
+        ParcelFileDescriptor parcelFileDescriptor =
+                getContentResolver().openFileDescriptor(uri, "r");
+        FileDescriptor fileDescriptor = parcelFileDescriptor.getFileDescriptor();
+        Bitmap image = BitmapFactory.decodeFileDescriptor(fileDescriptor);
+        parcelFileDescriptor.close();
+
+        return image;
+    }
+
+    private void getAllStringFormEditText() {
+
+        taskTitleString = taskTitle.getText().toString();
+        taskDescriptionString = taskDescription.getText().toString();
+        taskStateString = taskState.getSelectedItem().toString();
+    }
+
+    private void addTaskButtonAction() {
+        if (TextUtils.isEmpty(taskTitle.getText()) || TextUtils.isEmpty(taskDescription.getText())) {
+
+            taskTitle.setError("Title is Required");
+            taskDescription.setError("Description is required");
+        } else {
+            Toast.makeText(this, "Submitted!", Toast.LENGTH_SHORT).show();
+            saveToCloudDB();
+            navigateToMainPage();
+        }
+
+        View view2 = this.getCurrentFocus();
+        if (view2 != null) {
+            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(view2.getWindowToken(), 0);
+        }
+    }
+
+    private void saveToCloudDB() {
+
+        // Lab 32 \\
+        Team team1 = SplashActivity.teamsList.stream().filter(team -> team.getName().equals("First Team")).
+                collect(Collectors.toList()).get(0);
+
+//        Team team2 = Team.builder().name("Second Team").build();
+//        Team team3 = Team.builder().name("Third Team").build();
+
+        task = Task.builder()
+                .title(taskTitleString)
+                .description(taskDescriptionString)
+                .status(taskStateString)
+                .teamTasksId(team1.getId())
+                .coordinates(coordinatList)
+                .taskImageCode(taskImageKey)
+                .build();
+
+        // Data store save
+        Amplify.DataStore.save(team1,
+                success -> {
+                    Amplify.DataStore.save(task,
+                            savedTask -> {
+                                Log.i(TAG, "Task in add task page " + team1.getId());
+                            },
+                            failure -> {
+                                Log.e(TAG, "Task not saved.", failure);
+                                Toast.makeText(this, "Something went wrong!", Toast.LENGTH_SHORT).show();
+                            }
+                    );
+                    Log.i(TAG, "Team in add task page " + success.item().getName());
+                },
+                error -> {
+                    Log.e(TAG, "Could not save item to DataStore ", error);
+                    Toast.makeText(this, "Something went wrong!", Toast.LENGTH_SHORT).show();
+                }
+        );
+
+        // API save to backend
+        Amplify.API.mutate(ModelMutation.create(team1),
+                success -> Amplify.API.mutate(ModelMutation.create(task),
+                        successTask -> {
+                            if (!(taskImageKey == null)) {
+                                uploadImage();
+                            }
+                            Log.i(TAG, "Task saved to team from API => " + successTask.getData().getId());
+                        },
+                        failure -> {
+                            Log.i(TAG, "Task not saved to the team from API => ");
+                            Toast.makeText(this, "Something went wrong!", Toast.LENGTH_SHORT).show();
+                        }),
+                error -> {
+                    Log.e(TAG, "Could not save team to API ", error);
+                    Toast.makeText(this, "Something went wrong!", Toast.LENGTH_SHORT).show();
+                }
+        );
+        /*
+         * https://stackoverflow.com/questions/66576755/io-reactivex-exceptions-undeliverableexception-the-exception-could-not-be-delive
+         */
+        RxJavaPlugins.setErrorHandler(e -> {
+        });
+    }
+
     private void uploadImage() {
 
         // upload to s3
@@ -371,29 +492,17 @@ public class AddTaskActivity extends AppCompatActivity {
         );
     }
 
+    private void navigateToMainPage() {
+
+        Intent intent = new Intent(this, MainActivity.class);
+        intent.putExtra(TASK_ID, task.getId());
+        startActivity(intent);
+        finish();
+    }
+
     /*
      * https://stackoverflow.com/questions/2169649/get-pick-an-image-from-androids-built-in-gallery-app-programmatically
      */
-    private Bitmap getBitmapFromUri(Uri uri) throws IOException {
-        ParcelFileDescriptor parcelFileDescriptor =
-                getContentResolver().openFileDescriptor(uri, "r");
-        FileDescriptor fileDescriptor = parcelFileDescriptor.getFileDescriptor();
-        Bitmap image = BitmapFactory.decodeFileDescriptor(fileDescriptor);
-        parcelFileDescriptor.close();
-
-        return image;
-    }
-
-    public static String generateRandomString(int len) {
-        String chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijk"
-                + "lmnopqrstuvwxyz!@#$%&";
-        Random rnd = new Random();
-        StringBuilder sb = new StringBuilder(len);
-        for (int i = 0; i < len; i++)
-            sb.append(chars.charAt(rnd.nextInt(chars.length())));
-        return sb.toString();
-    }
-
     private void handleSharedImageAndText(){
 
         Intent intent = getIntent();
@@ -402,13 +511,68 @@ public class AddTaskActivity extends AppCompatActivity {
         if (Intent.ACTION_SEND.equals(intent.getAction()) && type != null) {
             if ("text/plain".equals(type)) {
                 Log.i(TAG, "handleSendText: Type => " + type);
+                isFromMainActivity = false;
                 taskDescription.setText(intent.getStringExtra(Intent.EXTRA_TEXT));
             } else if (type.startsWith("image/")) {
                 Log.i(TAG, "handleSendImage: Type => " + type);
                 convertBitmapToFile(intent.getParcelableExtra(Intent.EXTRA_STREAM));
+                isFromMainActivity = false;
+            }else {
+                isFromMainActivity = true;
             }
         }
     }
+
+    private void manuallyInitializeTheTeams() {
+//        //Add the team to the task
+//        Team team1 = Team.builder()
+//                .name("First Team")
+//                .build();
+//        Amplify.DataStore.save(team1, pass -> {
+//                    Log.i(TAG, "Saved Task To the Team => " + pass.item().getName());
+//                },
+//                failure -> {
+//                    Log.e(TAG, "Could not save Team to Task ", failure);
+//                });
+//        //Add the team to the task
+//        Team team2 = Team.builder()
+//                .name("Second Team")
+//                .build();
+//        Amplify.DataStore.save(team2, pass -> {
+//                    Log.i(TAG, "Saved Task To the Team => " + pass.item().getName());
+//                },
+//                failure -> {
+//                    Log.e(TAG, "Could not save Team to Task ", failure);
+//                });
+//        //Add the team to the task
+//        Team team3 = Team.builder()
+//                .name("Third Team")
+//                .build();
+//        Amplify.DataStore.save(team3, pass -> {
+//                    Log.i(TAG, "Saved Task To the Team => " + pass.item().getName());
+//                },
+//                failure -> {
+//                    Log.e(TAG, "Could not save Team to Task ", failure);
+//                });
+    }
+
+    private void saveTeamToLocalDB() {
+
+
+//        Task newTask = new Task(taskTitleString, taskDescriptionString, taskState);
+//        TaskDatabase.getInstance(getApplicationContext()).taskDao().insertTask(newTask);
+
+//        com.example.taskmaster.data.Team team1 = new com.example.taskmaster.data.Team("First Team");
+//        com.example.taskmaster.data.Team team2 = new com.example.taskmaster.data.Team("Second Team");
+//        com.example.taskmaster.data.Team team3 = new com.example.taskmaster.data.Team("Third Team");
+//
+//        TeamDatabase.getInstance(this).teamDao().insertTeam(team1);
+//        TeamDatabase.getInstance(this).teamDao().insertTeam(team2);
+//        TeamDatabase.getInstance(this).teamDao().insertTeam(team3);
+
+    }
+
+
 
 
 }

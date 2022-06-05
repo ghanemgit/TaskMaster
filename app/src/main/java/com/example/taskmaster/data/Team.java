@@ -4,8 +4,11 @@ import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
+import org.junit.Ignore;
+
 
 @Entity(tableName = "Teams")
+@Ignore
 public class Team {
 
     @PrimaryKey(autoGenerate = true)

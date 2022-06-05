@@ -1,8 +1,11 @@
 package com.example.taskmaster.ui;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.SpannableString;
@@ -11,6 +14,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.animation.Animation;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
@@ -26,6 +30,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.amplifyframework.api.graphql.model.ModelQuery;
 import com.amplifyframework.core.Amplify;
+import com.amplifyframework.core.model.query.Where;
 import com.amplifyframework.datastore.generated.model.Task;
 import com.example.taskmaster.Auth.LoginActivity;
 import com.example.taskmaster.R;
@@ -43,10 +48,12 @@ public class MainActivity extends AppCompatActivity {
     private TextView usernameWelcoming;
     private FloatingActionButton floatAddTaskButton;
     public static List<Task> tasksList = new ArrayList<>();
-    private String selectedItem = "";
+    private String statusSelected;
     private LoadingDialog loadingDialog;
     private CustomListRecyclerViewAdapter customListRecyclerViewAdapter;
     private RecyclerView taskRecyclerView;
+    private Spinner sortSpinner;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,7 +66,8 @@ public class MainActivity extends AppCompatActivity {
 
         showUserNameOrTeam();
 
-        onlineFetchTasksData();
+        if (isOnline()) onlineFetchTasksData();
+        else offlineFetchTasksData();
 
         //set adapter for filter tasks spinner
         setAdapterToStatesTaskArraySpinner();
@@ -89,7 +97,10 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        onlineFetchTasksData();
+
+        if (isOnline()) onlineFetchTasksData();
+        else offlineFetchTasksData();
+        sortSpinner.setSelection(0);
         showUserNameOrTeam();
         Log.i(TAG, "onResume: called");
     }
@@ -107,101 +118,117 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    //Set what happens when click on item from the overflow menu
-    @SuppressLint("NonConstantResourceId")
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.action_settings:
-                navigateToSetting();
-                return true;
-            case R.id.action_copyright:
-                Toast.makeText(this, "Copyright 2022", Toast.LENGTH_SHORT).show();
-                return true;
-            case R.id.action_all_tasks:
-                navigateToAllTaskPage();
-                return true;
-            case R.id.action_sign_out:
-                loadingDialog.startLoadingDialog();
-                signOut();
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
-        }
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.main, menu);
+    private void findAllViewsById() {
+        usernameWelcoming = findViewById(R.id.username_welcoming);
         /*
-        https://stackoverflow.com/questions/3519277/how-to-change-the-text-color-of-menu-item-in-android
-        how to change an item color in overflow menu
-        */
-        int positionOfMenuItem = 3; // or whatever...
-        MenuItem item = menu.getItem(positionOfMenuItem);
-        SpannableString s = new SpannableString("Sign out");
-        s.setSpan(new ForegroundColorSpan(Color.RED), 0, s.length(), 0);
-        item.setTitle(s);
-        MenuCompat.setGroupDividerEnabled(menu, true);
-        return true;
-    }
-
-    private void navigateToLoginPage() {
-        Intent intent = new Intent(MainActivity.this, LoginActivity.class);
-        startActivity(intent);
-        loadingDialog.dismissLoadingDialog();
-        finish();
-    }
-
-    private void navigateToAddTaskPage() {
-        Intent intent = new Intent(MainActivity.this, AddTaskActivity.class);
-        intent.putExtra(MainActivity.class.getSimpleName(),MainActivity.class.getSimpleName());
-        startActivity(intent);
-    }
-
-    private void navigateToAllTaskPage() {
-        Intent intent = new Intent(MainActivity.this, AllTasksActivity.class);
-        startActivity(intent);
-    }
-
-    private void navigateToSetting() {
-        overridePendingTransition(0, 0);
-        Intent intent = new Intent(this, SettingActivity.class);
-        intent.putExtra("tasksListSize", tasksList.size());
-        startActivity(intent);
-        overridePendingTransition(0, 0);
+        https://developer.android.com/guide/topics/ui/floating-action-button
+         */
+        floatAddTaskButton = findViewById(R.id.add_task_button_floating);
+        loadingDialog = new LoadingDialog(MainActivity.this);
+        taskRecyclerView = findViewById(R.id.recycler_view);
     }
 
     //Set up the username details to show it in the home screen
     @SuppressLint("SetTextI18n")
     public void showUserNameOrTeam() {
 
-        usernameWelcoming.setText(UserInfo.getDefaults(UserInfo.FIRST_NAME,"Guest",this) + " " + UserInfo.getDefaults(UserInfo.LAST_NAME,"",this));
+        usernameWelcoming.setText(UserInfo.getDefaults(UserInfo.FIRST_NAME, "Guest", this) + " " + UserInfo.getDefaults(UserInfo.LAST_NAME, "", this) + " Tasks");
 
-        usernameWelcoming.setText(UserInfo.getDefaults(UserInfo.USER_TEAM,UserInfo.getDefaults(UserInfo.FIRST_NAME,"Guest",this),this));
+        usernameWelcoming.setText(UserInfo.getDefaults(UserInfo.USER_TEAM, UserInfo.getDefaults(UserInfo.FIRST_NAME, "Guest", this), this) + " Tasks");
     }
 
-    private void getTasksListToHomePage() {
+    private boolean isOnline() {
+        ConnectivityManager cm =
+                (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo netInfo = cm.getActiveNetworkInfo();
+        return netInfo != null && netInfo.isConnectedOrConnecting();
+    }
 
+    private void onlineFetchTasksData() {
 
-        customListRecyclerViewAdapter = new CustomListRecyclerViewAdapter(tasksList, new CustomListRecyclerViewAdapter.CustomClickListener() {
+        Amplify.API.query(
+                ModelQuery.list(Task.class, Task.TEAM_TASKS_ID.eq(UserInfo.getDefaults(UserInfo.USER_TEAM_ID, null, this))),
+                tasks -> {
+                    tasksList.clear();
+                    if (tasks.hasData()) {
+                        for (Task task : tasks.getData()) {
+                            tasksList.add(task);
+                        }
+                    }
+                    runOnUiThread(() -> {
+                        customListRecyclerViewAdapter.notifyDataSetChanged();
+                    });
+                },
+                error -> {
+                    Log.e(TAG, error.toString());
+                    Toast.makeText(this, "Error in data sync from cloud", Toast.LENGTH_SHORT).show();
+                }
+        );
+    }
 
-            @Override
-            public void onTaskClicked(int position) {
-                Intent intent = new Intent(getApplicationContext(), TaskDetailsActivity.class);
-                intent.putExtra("Position", tasksList.get(position).getId());
-                startActivity(intent);
-            }
-        });
+    private void offlineFetchTasksData() {
 
-        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(
-                this,
-                LinearLayoutManager.VERTICAL,
-                false);
+        Amplify.DataStore.query(Task.class, Where.matches(Task.TEAM_TASKS_ID.eq(UserInfo.getDefaults(UserInfo.USER_TEAM_ID, null, this))),
+                allTasks -> {
+                    tasksList.clear();
+                    while (allTasks.hasNext()) {
+                        Task task = allTasks.next();
+                        Log.i(TAG, "Title: " + task.getTitle());
+                        tasksList.add(task);
+                    }
+                    runOnUiThread(() -> {
+                        customListRecyclerViewAdapter.notifyDataSetChanged();
+                    });
+                },
+                failure -> {
+                    Log.e(TAG, "Query failed.", failure);
+                    Toast.makeText(this, "Error in data sync from local", Toast.LENGTH_SHORT).show();
+                }
+        );
+    }
 
-        taskRecyclerView.setLayoutManager(linearLayoutManager);
-        taskRecyclerView.setHasFixedSize(true);
-        taskRecyclerView.setAdapter(customListRecyclerViewAdapter);
+    private void filterTaskAccordingToStatus(String str) {
+
+        if (isOnline()) {
+            Amplify.API.query(
+                    ModelQuery.list(Task.class, Task.TEAM_TASKS_ID.eq(UserInfo.getDefaults(UserInfo.USER_TEAM_ID, null, this)).and(Task.STATUS.eq(str))),
+                    tasks -> {
+                        tasksList.clear();
+                        if (tasks.hasData()) {
+                            for (Task task : tasks.getData()) {
+                                tasksList.add(task);
+                            }
+                        }
+                        runOnUiThread(() -> {
+                            customListRecyclerViewAdapter.notifyDataSetChanged();
+                        });
+                    },
+                    error -> {
+                        Log.e(TAG, error.toString());
+                        Toast.makeText(this, "Error in data sync from cloud", Toast.LENGTH_SHORT).show();
+                    }
+            );
+        } else {
+            Amplify.DataStore.query(Task.class, Where.matches(
+                            Task.TEAM_TASKS_ID.eq(UserInfo.getDefaults(UserInfo.USER_TEAM_ID, null, this))
+                                    .and(Task.STATUS.eq(str))),
+                    allTasks -> {
+                        tasksList.clear();
+                        while (allTasks.hasNext()) {
+                            Task task = allTasks.next();
+                            Log.i(TAG, "Title: " + task.getTitle());
+                            tasksList.add(task);
+                        }
+                        runOnUiThread(() -> {
+                            customListRecyclerViewAdapter.notifyDataSetChanged();
+                        });
+                    },
+                    failure -> {
+                        Log.e(TAG, "Query failed.", failure);
+                        Toast.makeText(this, "Error in data sync from local", Toast.LENGTH_SHORT).show();
+                    }
+            );
+        }
     }
 
     private void setAdapterToStatesTaskArraySpinner() {
@@ -226,17 +253,18 @@ public class MainActivity extends AppCompatActivity {
          * And as mr.Json tell us in the lecture
          * This spinner is responsible to filter the task for user by states
          */
-        Spinner sortSpinner = findViewById(R.id.task_states_filter_spinner);
+        sortSpinner = findViewById(R.id.task_states_filter_spinner);
         sortSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                selectedItem = adapterView.getItemAtPosition(i).toString();
-                //initializeData();
-                /*
-                 * https://stackoverflow.com/questions/3053761/reload-activity-in-android
-                 * how to refresh the activity
-                 */
-                onResume();
+                if (!(i==0)) {
+                    statusSelected = adapterView.getItemAtPosition(i).toString();
+                    filterTaskAccordingToStatus(statusSelected);
+                    /*
+                     * https://stackoverflow.com/questions/3053761/reload-activity-in-android
+                     * how to refresh the activity
+                     */
+                }
             }
 
             @Override
@@ -246,14 +274,59 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void findAllViewsById() {
-        usernameWelcoming = findViewById(R.id.username_welcoming);
+    private void getTasksListToHomePage() {
+
+
+        customListRecyclerViewAdapter = new CustomListRecyclerViewAdapter(tasksList, position -> {
+            Intent intent = new Intent(getApplicationContext(), TaskDetailsActivity.class);
+            intent.putExtra("Position", tasksList.get(position).getId());
+            startActivity(intent);
+        });
+
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(
+                this,
+                LinearLayoutManager.VERTICAL,
+                false);
+
+        taskRecyclerView.setLayoutManager(linearLayoutManager);
+        taskRecyclerView.setHasFixedSize(true);
+        taskRecyclerView.setAdapter(customListRecyclerViewAdapter);
+    }
+
+    //Set what happens when click on item from the overflow menu
+    @SuppressLint("NonConstantResourceId")
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_settings:
+                navigateToSetting();
+                return true;
+            case R.id.action_copyright:
+                Toast.makeText(this, "Copyright 2022", Toast.LENGTH_SHORT).show();
+                return true;
+            case R.id.action_sign_out:
+                loadingDialog.startLoadingDialog();
+                signOut();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main, menu);
         /*
-        https://developer.android.com/guide/topics/ui/floating-action-button
-         */
-        floatAddTaskButton = findViewById(R.id.add_task_button_floating);
-        loadingDialog = new LoadingDialog(MainActivity.this);
-        taskRecyclerView = findViewById(R.id.recycler_view);
+        https://stackoverflow.com/questions/3519277/how-to-change-the-text-color-of-menu-item-in-android
+        how to change an item color in overflow menu
+        */
+        int positionOfMenuItem = 2; // or whatever...
+        MenuItem item = menu.getItem(positionOfMenuItem);
+        SpannableString s = new SpannableString("Sign out");
+        s.setSpan(new ForegroundColorSpan(Color.RED), 0, s.length(), 0);
+        item.setTitle(s);
+        MenuCompat.setGroupDividerEnabled(menu, true);
+        return true;
     }
 
     private void signOut() {
@@ -271,46 +344,25 @@ public class MainActivity extends AppCompatActivity {
         );
     }
 
-    private void onlineFetchTasksData() {
-
-        Amplify.API.query(
-                ModelQuery.list(Task.class, Task.TEAM_TASKS_ID.eq(UserInfo.getDefaults(UserInfo.USER_TEAM_ID,null,this))),
-                tasks -> {
-                    tasksList.clear();
-                    if (tasks.hasData()) {
-                        for (Task task : tasks.getData()) {
-                            tasksList.add(task);
-                        }
-                    }
-                    runOnUiThread(() -> {
-                        customListRecyclerViewAdapter.notifyDataSetChanged();
-                    });
-                },
-                error -> {
-                    Log.e(TAG, error.toString());
-                    Toast.makeText(this, "Error in data sync from cloud", Toast.LENGTH_SHORT).show();
-                }
-        );
+    private void navigateToLoginPage() {
+        Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+        startActivity(intent);
+        loadingDialog.dismissLoadingDialog();
+        finish();
     }
 
-    private void offlineFetchTasksData() {
-
-        Amplify.DataStore.query(Task.class,
-                allTasks -> {
-                    tasksList.clear();
-                    while (allTasks.hasNext()) {
-                        Task task = allTasks.next();
-                        Log.i(TAG, "Title: " + task.getTitle());
-                        tasksList.add(task);
-                    }
-                    runOnUiThread(() -> {
-                        customListRecyclerViewAdapter.notifyDataSetChanged();
-                    });
-                },
-                failure -> {
-                    Log.e(TAG, "Query failed.", failure);
-                    Toast.makeText(this, "Error in data sync from local", Toast.LENGTH_SHORT).show();
-                }
-        );
+    private void navigateToAddTaskPage() {
+        Intent intent = new Intent(MainActivity.this, AddTaskActivity.class);
+        intent.putExtra(MainActivity.class.getSimpleName(), MainActivity.class.getSimpleName());
+        startActivity(intent);
     }
+
+    private void navigateToSetting() {
+        overridePendingTransition(0, 0);
+        Intent intent = new Intent(this, SettingActivity.class);
+        intent.putExtra("tasksListSize", tasksList.size());
+        startActivity(intent);
+        overridePendingTransition(0, 0);
+    }
+
 }

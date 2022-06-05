@@ -54,16 +54,16 @@ public class AddTaskActivityTest {
     @Test
     public void testHintVisibility() {
         // check hint visibility
-        onView(withId(R.id.taskTitleBox)).check(matches(withHint("Task Title")));
+        onView(withId(R.id.task_title_box)).check(matches(withHint("Task Title")));
         // enter name
-        onView(withId(R.id.taskTitleBox)).perform(typeText("First Task"), closeSoftKeyboard());
-        onView(withId(R.id.taskTitleBox)).check(matches(withText("First Task")));
+        onView(withId(R.id.task_title_box)).perform(typeText("First Task"), closeSoftKeyboard());
+        onView(withId(R.id.task_title_box)).check(matches(withText("First Task")));
 
         // check another hint visibility
-        onView(withId(R.id.taskDescriptionBox)).check(matches(withHint("Task Description")));
+        onView(withId(R.id.task_description_box)).check(matches(withHint("Task Description")));
         // enter name
-        onView(withId(R.id.taskDescriptionBox)).perform(typeText("Go to sleep"), closeSoftKeyboard());
-        onView(withId(R.id.taskDescriptionBox)).check(matches(withText("Go to sleep")));
+        onView(withId(R.id.task_description_box)).perform(typeText("Go to sleep"), closeSoftKeyboard());
+        onView(withId(R.id.task_description_box)).check(matches(withText("Go to sleep")));
 
         /*
          * https://stackoverflow.com/questions/31420839/android-espresso-check-selected-spinner-text
@@ -71,7 +71,7 @@ public class AddTaskActivityTest {
         onView(withId(R.id.task_states_spinner)).perform(click());
         onData(allOf(is(instanceOf(String.class)), is("In progress"))).perform(click());
         onView(withId(R.id.task_states_spinner)).check(matches(withSpinnerText(containsString("In progress"))));
-        onView(withId(R.id.taskDescriptionBox)).perform(closeSoftKeyboard());
+        onView(withId(R.id.task_description_box)).perform(closeSoftKeyboard());
 
     }
 
@@ -79,9 +79,9 @@ public class AddTaskActivityTest {
     public void testButtonClick() {
 
         // enter Title and description
-        onView(withId(R.id.taskTitleBox)).perform(typeText("First Task"), closeSoftKeyboard());
-        onView(withId(R.id.taskDescriptionBox)).perform(typeText("Go to sleep"), closeSoftKeyboard());
-        onView(withId(R.id.task_states_spinner)).perform(click());
+        onView(withId(R.id.task_title_box)).perform(typeText("First Task"), closeSoftKeyboard());
+        onView(withId(R.id.task_description_box)).perform(typeText("Go to sleep"), closeSoftKeyboard());
+        onView(withId(R.id.task_title_box)).perform(click());
         onData(allOf(is(instanceOf(String.class)), is("In progress"))).perform(click());
 
         onView(withText("ADD TASK")).perform(click());

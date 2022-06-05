@@ -30,7 +30,7 @@
         android:layout_width="match_parent">
 
     <EditText
-        android:id="@+id/taskTitleBox"
+        android:id="@+id/task_title_box"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/addTaskTitle"
