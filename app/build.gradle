@@ -26,12 +26,15 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+    buildFeatures {
+        viewBinding true
+    }
 }
 
 dependencies {
 
 
-//    implementation 'com.sothree.slidinguppanel:library:3.4.0'
+    implementation 'com.sothree.slidinguppanel:library:3.4.0'
 
     implementation "androidx.room:room-runtime:2.4.2"
     implementation 'androidx.preference:preference:1.2.0'
@@ -54,6 +57,8 @@ dependencies {
 
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
+    implementation 'com.amplifyframework:aws-predictions:1.35.4'
+    implementation 'com.amplifyframework:aws-analytics-pinpoint:1.35.4'
     implementation 'com.amplifyframework:aws-auth-cognito:1.35.4'
     implementation 'com.amplifyframework:aws-api:1.35.3'
     implementation 'com.amplifyframework:aws-datastore:1.35.3'

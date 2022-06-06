@@ -28,10 +28,17 @@ import androidx.core.view.MenuCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.amplifyframework.AmplifyException;
+import com.amplifyframework.analytics.AnalyticsEvent;
+import com.amplifyframework.analytics.pinpoint.AWSPinpointAnalyticsPlugin;
+import com.amplifyframework.api.aws.AWSApiPlugin;
 import com.amplifyframework.api.graphql.model.ModelQuery;
+import com.amplifyframework.auth.cognito.AWSCognitoAuthPlugin;
 import com.amplifyframework.core.Amplify;
 import com.amplifyframework.core.model.query.Where;
+import com.amplifyframework.datastore.AWSDataStorePlugin;
 import com.amplifyframework.datastore.generated.model.Task;
+import com.amplifyframework.storage.s3.AWSS3StoragePlugin;
 import com.example.taskmaster.Auth.LoginActivity;
 import com.example.taskmaster.R;
 import com.example.taskmaster.data.UserInfo;
@@ -61,7 +68,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Log.i(TAG, "onCreate: called");
 
-
+        recordEvents();
+        
         findAllViewsById();
 
         showUserNameOrTeam();
@@ -117,6 +125,18 @@ public class MainActivity extends AppCompatActivity {
         super.onPause();
     }
 
+
+    public void recordEvents(){
+
+        AnalyticsEvent event = AnalyticsEvent.builder()
+                .name("Task Master Opened")
+                .addProperty("Successful", true)
+                .addProperty("ProcessDuration", 792)
+                .build();
+
+        Amplify.Analytics.recordEvent(event);
+
+    }
 
     private void findAllViewsById() {
         usernameWelcoming = findViewById(R.id.username_welcoming);

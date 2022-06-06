@@ -45,8 +45,6 @@ import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 
 import java.io.BufferedOutputStream;
@@ -73,7 +71,7 @@ public class AddTaskActivity extends AppCompatActivity implements OnMapReadyCall
 
     private Task task;
 
-    private List<String> coordinatList = new ArrayList<>();
+    private List<String> coordinateList = new ArrayList<>();
 
     private EditText taskTitle,taskDescription;
 
@@ -166,8 +164,8 @@ public class AddTaskActivity extends AppCompatActivity implements OnMapReadyCall
 
                             // so the index 0 represent the latitude and the index 1 represent the longitude in coordinate list
 
-                            coordinatList.add(location.getLatitude()+"");
-                            coordinatList.add(location.getLongitude()+"");
+                            coordinateList.add(location.getLatitude()+"");
+                            coordinateList.add(location.getLongitude()+"");
 
                         }
                     }
@@ -431,7 +429,7 @@ public class AddTaskActivity extends AppCompatActivity implements OnMapReadyCall
                 .description(taskDescriptionString)
                 .status(taskStateString)
                 .teamTasksId(team1.getId())
-                .coordinates(coordinatList)
+                .coordinates(coordinateList)
                 .taskImageCode(taskImageKey)
                 .build();
 

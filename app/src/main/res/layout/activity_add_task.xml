@@ -98,12 +98,23 @@
         android:text="Upload"
         android:textColor="@color/white" />
 
+    <Button
+        android:id="@+id/add_location_button"
+        android:layout_width="150dp"
+        android:layout_height="50dp"
+        android:layout_below="@+id/upload_photo_button"
+        android:layout_marginTop="15dp"
+        android:layout_centerHorizontal="true"
+        android:backgroundTint="#3BACB6"
+        android:text="Add Location"
+        android:textColor="@color/white" />
+
 
     <Button
         android:id="@+id/create_task_button"
         android:layout_width="150dp"
         android:layout_height="50dp"
-        android:layout_below="@+id/upload_photo_button"
+        android:layout_below="@+id/add_location_button"
         android:layout_marginTop="15dp"
         android:layout_centerHorizontal="true"
         android:backgroundTint="#3BACB6"
