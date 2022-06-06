@@ -4,9 +4,17 @@
 
 #### As ASAC required from us we will start building application responsible to distributing, management, creating and editing the tasks for user, so we start this build after midterm project and we will use Android studio to help us build this application.
 
+
+# Day 13
+#### Today I learned how to start collecting basic, aggregated analytics on user usage events, and read task descriptions to users out loud and translate the task description to the user from english to arabic 
+### Here is some screenshot files to see my work today you can see it [here](ScreenShot/13thDay/Day13.md)
+### Go directly to the edited activity [here](app/src/main/java/com/example/taskmaster/ui/TaskDetailsActivity.java)
+
+
+
 # Day 12
 #### Today I learned how to create account to google cloud services and add my bills to it, After that I starting to learn how to use the google maps platform and generate api key to link my application with the google map service, In addition I know how to request the permission from the user and how to check if the location service on the mobile device is enabled or not, also I learn how create google map object to load the map from google and a lot of other nice things.
-### Here is some GIF files to see my work today you can see it [here](ScreenShot/12thDay/Day12.md)
+### Here is some screenshot files to see my work today you can see it [here](ScreenShot/12thDay/Day12.md)
 ### Go directly to the edited activity [here](app/src/main/java/com/example/taskmaster/ui/AddTaskActivity.java)
 
 

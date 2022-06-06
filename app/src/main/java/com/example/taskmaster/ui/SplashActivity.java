@@ -15,12 +15,14 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.amplifyframework.AmplifyException;
+import com.amplifyframework.analytics.pinpoint.AWSPinpointAnalyticsPlugin;
 import com.amplifyframework.api.aws.AWSApiPlugin;
 import com.amplifyframework.api.graphql.model.ModelQuery;
 import com.amplifyframework.auth.cognito.AWSCognitoAuthPlugin;
 import com.amplifyframework.core.Amplify;
 import com.amplifyframework.datastore.AWSDataStorePlugin;
 import com.amplifyframework.datastore.generated.model.Team;
+import com.amplifyframework.predictions.aws.AWSPredictionsPlugin;
 import com.amplifyframework.storage.s3.AWSS3StoragePlugin;
 import com.example.taskmaster.Auth.LoginActivity;
 
@@ -40,8 +42,8 @@ public class SplashActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        configureAmplify();
 
-        configureAmplify(this);
         Log.i(TAG, "Is online -> "+isOnline());
         if (isOnline()) {
             onlineFetchTeamsData(this);
@@ -61,14 +63,16 @@ public class SplashActivity extends AppCompatActivity {
         Log.i(TAG, "onDestroy: called");
     }
 
-    public static void configureAmplify(Context context) {
+    public void configureAmplify() {
         try {
             Amplify.addPlugin(new AWSDataStorePlugin());
             Amplify.addPlugin(new AWSApiPlugin());
             // Add this line, to include the Auth plugin.
             Amplify.addPlugin(new AWSCognitoAuthPlugin());
             Amplify.addPlugin(new AWSS3StoragePlugin());
-            Amplify.configure(context);
+            Amplify.addPlugin(new AWSPinpointAnalyticsPlugin(getApplication()));
+            Amplify.addPlugin(new AWSPredictionsPlugin());
+            Amplify.configure(getApplicationContext());
         } catch (AmplifyException error) {
             Log.e(TAG, "Could not initialize Amplify", error);
         }
@@ -155,7 +159,7 @@ public class SplashActivity extends AppCompatActivity {
 
         new Handler().postDelayed(() -> {
 
-        }, 1000);
+        }, 2000);
     }
 
     private void navigateToMainActivity() {

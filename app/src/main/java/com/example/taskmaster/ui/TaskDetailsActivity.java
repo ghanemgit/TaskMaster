@@ -9,6 +9,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.location.LocationManager;
+import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
@@ -32,6 +33,7 @@ import com.amplifyframework.api.graphql.model.ModelMutation;
 import com.amplifyframework.core.Amplify;
 import com.amplifyframework.core.model.query.Where;
 import com.amplifyframework.datastore.generated.model.Task;
+import com.amplifyframework.predictions.models.LanguageType;
 import com.example.taskmaster.R;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -49,6 +51,11 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -58,7 +65,7 @@ public class TaskDetailsActivity extends AppCompatActivity implements OnMapReady
 
     private static final String TAG = TaskDetailsActivity.class.getSimpleName();
 
-    private ImageView taskImageView;
+    private ImageView taskImageView, locationMarkerImage, translateImage, textToSpeechImage;
 
     private Task currentTask = null, taskFromAddTaskPage = null;
 
@@ -78,6 +85,7 @@ public class TaskDetailsActivity extends AppCompatActivity implements OnMapReady
 
     private FusedLocationProviderClient mFusedLocationProviderClient;
 
+    private final MediaPlayer mp = new MediaPlayer();
 
 
     @Override
@@ -88,8 +96,6 @@ public class TaskDetailsActivity extends AppCompatActivity implements OnMapReady
         findAllViewById();
 
         loadTaskInfoFromMain();
-
-        prepareGoogleMaps();
 
         setTextForTaskView();
 
@@ -145,9 +151,8 @@ public class TaskDetailsActivity extends AppCompatActivity implements OnMapReady
                         longitude = Double.parseDouble(currentTask.getCoordinates().get(1));
 
 
-
                         Log.i(TAG, "onComplete: The latitude and longitude is -> " + location.getLatitude() + "-> " + location.getLongitude());
-                        Log.i(TAG, "Google map is -> "+googleMap);
+                        Log.i(TAG, "Google map is -> " + googleMap);
                         googleMap.addMarker(new MarkerOptions()
                                 .position(new LatLng(latitude, longitude))
                                 .title("Marker"));
@@ -251,13 +256,6 @@ public class TaskDetailsActivity extends AppCompatActivity implements OnMapReady
         if (sendIntent.resolveActivity(getPackageManager()) != null) {
             startActivity(chooser);
         }
-
-        // Try to invoke the intent.
-//        try {
-//            startActivity(sendIntent);
-//        } catch (ActivityNotFoundException e) {
-//            // Define what your app should do if no activity can handle the intent.
-//        }
     }
 
     private void findAllViewById() {
@@ -268,6 +266,8 @@ public class TaskDetailsActivity extends AppCompatActivity implements OnMapReady
         editButton = findViewById(R.id.edit_button);
         taskImageView = findViewById(R.id.task_image);
         mapCardView = findViewById(R.id.location_card_view);
+        translateImage = findViewById(R.id.translate_image);
+        textToSpeechImage = findViewById(R.id.text_to_speech_image);
     }
 
     private void setOnClickListeners() {
@@ -278,6 +278,14 @@ public class TaskDetailsActivity extends AppCompatActivity implements OnMapReady
 
         mapCardView.setOnClickListener(view -> {
 
+        });
+
+        translateImage.setOnClickListener(view -> {
+            translateImageListener();
+        });
+
+        textToSpeechImage.setOnClickListener(view -> {
+            textToSpeech();
         });
 
     }
@@ -375,5 +383,68 @@ public class TaskDetailsActivity extends AppCompatActivity implements OnMapReady
                     error -> Log.e(TAG, "Download Failure", error)
             );
         }
+    }
+
+    private void translateImageListener() {
+
+        Amplify.Predictions.translateText(
+                currentTask.getDescription(),
+                LanguageType.ENGLISH,
+                LanguageType.ARABIC,
+                result -> {
+                    runOnUiThread(() -> {
+                        AlertDialog.Builder showTranslationAlert = new AlertDialog.Builder(TaskDetailsActivity.this);
+                        showTranslationAlert.setTitle("Translate to arabic");
+                        showTranslationAlert.setMessage(result.getTranslatedText());
+                    /*
+                    How to add alert to my program
+                    https://stackoverflow.com/questions/23195208/how-to-pop-up-a-dialog-to-confirm-delete-when-user-long-press-on-the-list-item
+                    */
+                        showTranslationAlert.setPositiveButton("Ok", (dialogInterface, i) -> onResume());
+
+                        showTranslationAlert.show();
+                    });
+                    Log.i(TAG, result.getTranslatedText());
+                },
+                error -> {
+                    Log.e(TAG, "Translation failed", error);
+                    runOnUiThread(() -> {
+                        Toast.makeText(this, "Translation Failed", Toast.LENGTH_SHORT).show();
+                    });
+                }
+        );
+    }
+
+    private void textToSpeech() {
+
+        Amplify.Predictions.convertTextToSpeech(
+                currentTask.getDescription(),
+                result -> playAudio(result.getAudioData()),
+                error -> {
+                    Log.e(TAG, "Conversion failed", error);
+
+                    runOnUiThread(() -> Toast.makeText(this, "Conversion failed", Toast.LENGTH_SHORT).show());
+                }
+        );
+
+    }
+
+    private void playAudio(InputStream data) {
+        File mp3File = new File(getCacheDir(), "audio.mp3");
+
+        try (OutputStream out = new FileOutputStream(mp3File)) {
+            byte[] buffer = new byte[8 * 1_024];
+            int bytesRead;
+            while ((bytesRead = data.read(buffer)) != -1) {
+                out.write(buffer, 0, bytesRead);
+            }
+            mp.reset();
+            mp.setOnPreparedListener(MediaPlayer::start);
+            mp.setDataSource(new FileInputStream(mp3File).getFD());
+            mp.prepareAsync();
+        } catch (IOException error) {
+            Log.e("MyAmplifyApp", "Error writing audio file", error);
+        }
+
     }
 }

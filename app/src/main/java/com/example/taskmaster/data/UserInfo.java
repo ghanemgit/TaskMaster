@@ -69,7 +69,6 @@ public class UserInfo {
 
     public static void setTheUerInfoFromTheSharedPreferences(Context context){
 
-        SplashActivity.configureAmplify(context);
         SplashActivity.onlineFetchTeamsData(context);
         SplashActivity.offlineFetchTeamsData(context);
         email = getDefaults(EMAIL,null,context);
