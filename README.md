@@ -4,6 +4,10 @@
 
 #### As ASAC required from us we will start building application responsible to distributing, management, creating and editing the tasks for user, so we start this build after midterm project and we will use Android studio to help us build this application.
 
+# Day 14
+#### Today I learned how to sign up in google AdMob service to enable me active the ads for my application, after that I know how to add the different type of ads in my application like banner, Interstitial and rewarded and how to implement each type in my code from the prepare to load the ads then load the ads and finally show it.
+### Here is some screenshot files to see my work today you can see it [here](ScreenShot/14thDay/Day14.md)
+### Go directly to the edited activity [here](app/src/main/java/com/example/taskmaster/ui/MainActivity.java)
 
 # Day 13
 #### Today I learned how to start collecting basic, aggregated analytics on user usage events, and read task descriptions to users out loud and translate the task description to the user from english to arabic 

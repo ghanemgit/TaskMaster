@@ -21,6 +21,7 @@ public class UserInfo {
     public static String lastName;
     public static String userTeam;
     public static String userTeamId;
+    public static int userPoints;
 
     public static final String EMAIL = "email";
     public static final String FIRST_NAME = "first name";

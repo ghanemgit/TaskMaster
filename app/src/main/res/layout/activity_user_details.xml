@@ -58,6 +58,19 @@
         app:layout_constraintTop_toBottomOf="@+id/email_in_card_view" />
 
     <TextView
+        android:id="@+id/user_point_in_card_view"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_marginStart="25dp"
+        android:layout_marginEnd="25dp"
+        android:background="@drawable/non_rounded_edit_text_yellow"
+        android:gravity="center_vertical"
+        android:text="Full Name"
+        android:textColor="@color/black"
+        android:textSize="18sp"
+        app:layout_constraintTop_toBottomOf="@+id/team_in_card_view" />
+
+    <TextView
         android:id="@+id/task_number_in_card_view"
         android:layout_width="match_parent"
         android:layout_height="60dp"
@@ -68,7 +81,7 @@
         android:text="Full Name"
         android:textColor="@color/black"
         android:textSize="18sp"
-        app:layout_constraintTop_toBottomOf="@+id/team_in_card_view" />
+        app:layout_constraintTop_toBottomOf="@+id/user_point_in_card_view" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
