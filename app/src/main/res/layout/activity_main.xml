@@ -36,6 +36,15 @@
         android:layout_marginTop="15dp"
         />
 
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/swipe_refresh_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_below="@+id/task_states_filter_spinner"
+        app:layout_constraintEnd_toEndOf="parent">
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_view"
         android:background="@color/silver"
@@ -44,68 +53,73 @@
         android:layout_marginTop="10dp"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@+id/task_states_filter_spinner"
     />
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/rewarded_ad_floating_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/interstitial_ad_floating_button"
+        android:layout_alignEnd="@+id/add_task_button_floating"
+        android:layout_marginBottom="15dp"
+        android:visibility="invisible"
+        android:backgroundTint="#3BACB6"
+        android:contentDescription="@string/addTaskB"
+        android:src="@drawable/advertising"
+        android:tint="@android:color/white" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/interstitial_ad_floating_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="invisible"
+        android:layout_above="@+id/add_task_button_floating"
+        android:layout_alignEnd="@+id/add_task_button_floating"
+        android:layout_marginBottom="15dp"
+        android:backgroundTint="#3BACB6"
+        android:contentDescription="@string/addTaskB"
+        android:src="@drawable/ic_dolar_money"
+        android:tint="@android:color/white" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/add_task_button_floating"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:visibility="invisible"
+        android:layout_above="@+id/expandable_floating_button"
+        android:layout_alignEnd="@+id/expandable_floating_button"
+        android:layout_marginBottom="15dp"
         android:backgroundTint="#3BACB6"
-        android:layout_alignParentBottom="true"
+        android:contentDescription="@string/addTaskB"
+        android:src="@drawable/ic_add_task"
+        android:tint="@android:color/white" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/expandable_floating_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
-        android:layout_marginBottom="30dp"
+        android:layout_alignParentBottom="true"
         android:layout_marginEnd="20dp"
-        android:src="@drawable/add_task_icon"
-        android:contentDescription="@string/addTaskB" />
-
-<!--    <ImageView-->
-<!--        android:id="@+id/imageView"-->
-<!--        android:layout_width="wrap_content"-->
-<!--        android:layout_height="300dp"-->
-<!--        android:layout_marginTop="80dp"-->
-<!--        android:src="@drawable/view_image"-->
-<!--        app:layout_constraintVertical_bias="1.0" />-->
+        android:layout_marginBottom="60dp"
+        android:backgroundTint="#3BACB6"
+        android:contentDescription="@string/addTaskB"
+        android:src="@drawable/ic_add_task"
+        android:tint="@android:color/white" />
 
 
-<!--    <Button-->
-<!--        android:id="@+id/addTaskButton"-->
-<!--        android:drawableLeft="@drawable/add_task_icon"-->
-<!--        android:layout_width="wrap_content"-->
-<!--        android:layout_height="50dp"-->
-<!--        android:layout_below="@+id/imageView"-->
-<!--        android:layout_marginStart="30dp"-->
-<!--        android:backgroundTint="@color/teal_700"-->
-<!--        android:text="@string/addTaskB"-->
-<!--        android:textColor="@color/white" />-->
-
-<!--    <Button-->
-<!--        android:id="@+id/allTaskButton"-->
-<!--        android:drawableLeft="@drawable/to_do_list_icon"-->
-<!--        android:layout_width="wrap_content"-->
-<!--        android:layout_height="50dp"-->
-<!--        android:layout_below="@+id/imageView"-->
-<!--        android:layout_centerHorizontal="true"-->
-<!--        android:layout_marginEnd="30dp"-->
-<!--        android:layout_alignParentEnd="true"-->
-<!--        android:backgroundTint="@color/teal_700"-->
-<!--        android:text="@string/allTaskB"-->
-<!--        android:textColor="@color/white" />-->
-
-<!--    <Button-->
-<!--        android:id="@+id/task_details_button"-->
-<!--        android:layout_width="wrap_content"-->
-<!--        android:layout_height="50dp"-->
-<!--        android:layout_below="@+id/addTaskButton"-->
-<!--        android:layout_centerHorizontal="true"-->
-<!--        android:layout_marginTop="25dp"-->
-<!--        android:backgroundTint="@color/teal_700"-->
-<!--        android:text="@string/button_task_detail"-->
-<!--        android:enabled="false"-->
-<!--        android:textColor="@color/white" />-->
-
-
-
+    <com.google.android.gms.ads.AdView
+        xmlns:ads="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/ad_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="5dp"
+        android:layout_alignParentBottom="true"
+        ads:adSize="BANNER"
+        ads:adUnitId="ca-app-pub-3940256099942544/6300978111">
+    </com.google.android.gms.ads.AdView>
 
 </RelativeLayout>
 

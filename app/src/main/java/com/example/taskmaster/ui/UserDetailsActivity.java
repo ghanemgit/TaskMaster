@@ -20,11 +20,13 @@ public class UserDetailsActivity extends AppCompatActivity {
     private TextView textView2;
     private TextView textView3;
     private TextView textView4;
+    private TextView textView5;
 
     private String firstName;
     private String lastName;
     private String email;
     private String team;
+    private int userPoints;
     private int noOfTasks;
 
 
@@ -46,7 +48,8 @@ public class UserDetailsActivity extends AppCompatActivity {
         textView = findViewById(R.id.name_in_card_view);
         textView2 = findViewById(R.id.email_in_card_view);
         textView3 = findViewById(R.id.team_in_card_view);
-        textView4 = findViewById(R.id.task_number_in_card_view);
+        textView4 = findViewById(R.id.user_point_in_card_view);
+        textView5 = findViewById(R.id.task_number_in_card_view);
 
     }
 
@@ -57,6 +60,7 @@ public class UserDetailsActivity extends AppCompatActivity {
         email = UserInfo.getDefaults(UserInfo.EMAIL,null,this);
         team = UserInfo.getDefaults(UserInfo.USER_TEAM,"No team",this);
         noOfTasks = getIntent().getIntExtra("tasksListSize",5);
+        userPoints = UserInfo.userPoints;
     }
 
     @SuppressLint("SetTextI18n")
@@ -65,6 +69,7 @@ public class UserDetailsActivity extends AppCompatActivity {
         textView.setText("  Full name: "+firstName+" "+lastName);
         textView2.setText("  Email: "+email);
         textView3.setText("  Team: "+team);
-        textView4.setText("  No of team Tasks: "+noOfTasks);
+        textView4.setText("  Points: "+userPoints);
+        textView5.setText("  No of team Tasks: "+noOfTasks);
     }
 }

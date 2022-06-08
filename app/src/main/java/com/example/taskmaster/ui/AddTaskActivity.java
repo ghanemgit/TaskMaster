@@ -3,6 +3,7 @@ package com.example.taskmaster.ui;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -18,6 +19,7 @@ import android.os.ParcelFileDescriptor;
 import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
@@ -62,8 +64,8 @@ import java.util.stream.Collectors;
 import io.reactivex.rxjava3.plugins.RxJavaPlugins;
 
 @RequiresApi(api = Build.VERSION_CODES.N)
-@SuppressLint({"SetTextI18n", "MissingPermission","WrongThread"})
-public class AddTaskActivity extends AppCompatActivity implements OnMapReadyCallback {
+@SuppressLint({"SetTextI18n", "MissingPermission", "WrongThread"})
+public class AddTaskActivity extends AppCompatActivity implements OnMapReadyCallback{
     private static final String TAG = AddTaskActivity.class.getSimpleName();
 
     private static final int REQUEST_CODE = 123;
@@ -73,25 +75,25 @@ public class AddTaskActivity extends AppCompatActivity implements OnMapReadyCall
 
     private List<String> coordinateList = new ArrayList<>();
 
-    private EditText taskTitle,taskDescription;
+    private EditText taskTitle, taskDescription;
 
     private Spinner taskState;
 
-    private Button addTaskButton,uploadImageButton;
+    private Button addTaskButton, uploadImageButton,addLocationButton;
 
     public static final String TASK_ID = "TaskID";
 
-    private String taskImageKey,taskTitleString,taskDescriptionString,taskStateString;
+    private String taskImageKey, taskTitleString, taskDescriptionString, taskStateString;
 
     private File file;
 
     private boolean isFromMainActivity;
 
-    private double latitude, longitude;
-
     private GoogleMap googleMap;
 
     private FusedLocationProviderClient mFusedLocationProviderClient;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -112,8 +114,6 @@ public class AddTaskActivity extends AppCompatActivity implements OnMapReadyCall
 
         handleSharedImageAndText();
 
-        if (!isFromMainActivity){
-        }
     }
 
     @Override
@@ -158,9 +158,6 @@ public class AddTaskActivity extends AppCompatActivity implements OnMapReadyCall
                         if (location == null) {
                             requestNewLocationData();
                         } else {
-
-                            latitude = location.getLatitude();
-                            longitude = location.getLongitude();
 
                             // so the index 0 represent the latitude and the index 1 represent the longitude in coordinate list
 
@@ -246,10 +243,12 @@ public class AddTaskActivity extends AppCompatActivity implements OnMapReadyCall
         }
     }
 
+
     private void findAllViewsByIdMethod() {
 
         addTaskButton = findViewById(R.id.create_task_button);
         uploadImageButton = findViewById(R.id.upload_photo_button);
+        addLocationButton = findViewById(R.id.add_location_button);
         taskTitle = findViewById(R.id.task_title_box);
         taskDescription = findViewById(R.id.task_description_box);
         taskState = findViewById(R.id.task_states_spinner);
@@ -318,6 +317,10 @@ public class AddTaskActivity extends AppCompatActivity implements OnMapReadyCall
             addTaskButtonAction();
         });
 
+        addLocationButton.setOnClickListener(view -> {
+            //showTheCurrentLocationForUser();
+        });
+
     }
 
     private void bringPhotoFromGallery() {
@@ -348,7 +351,7 @@ public class AddTaskActivity extends AppCompatActivity implements OnMapReadyCall
         }
     }
 
-    private void convertBitmapToFile(Uri currentUri){
+    private void convertBitmapToFile(Uri currentUri) {
 
         try {
 
@@ -501,7 +504,7 @@ public class AddTaskActivity extends AppCompatActivity implements OnMapReadyCall
     /*
      * https://stackoverflow.com/questions/2169649/get-pick-an-image-from-androids-built-in-gallery-app-programmatically
      */
-    private void handleSharedImageAndText(){
+    private void handleSharedImageAndText() {
 
         Intent intent = getIntent();
         String type = intent.getType();
@@ -513,14 +516,33 @@ public class AddTaskActivity extends AppCompatActivity implements OnMapReadyCall
                 taskDescription.setText(intent.getStringExtra(Intent.EXTRA_TEXT));
             } else if (type.startsWith("image/")) {
                 Log.i(TAG, "handleSendImage: Type => " + type);
+                Toast.makeText(this, "Image Uploaded", Toast.LENGTH_SHORT).show();
                 convertBitmapToFile(intent.getParcelableExtra(Intent.EXTRA_STREAM));
                 isFromMainActivity = false;
-            }else {
+            } else {
                 isFromMainActivity = true;
             }
         }
     }
 
+    private void showTheCurrentLocationForUser(){
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+        builder.setTitle("Add Location");
+        LayoutInflater inflater = this.getLayoutInflater();
+        builder.setView(inflater.inflate(R.layout.activity_maps,null));
+        builder.setCancelable(true);
+
+        builder.setPositiveButton("Add", (dialogInterface, i) -> {
+            Intent intent = new Intent(this, MapsActivity.class);
+            intent.putExtra("Is from AddTaskActivity",AddTaskActivity.class.getSimpleName());
+            Toast.makeText(this, "Location Added", Toast.LENGTH_SHORT).show();
+        });
+        builder.setNegativeButton("Cancel", (dialogInterface, i) -> onResume());
+
+        builder.show();
+    }
     private void manuallyInitializeTheTeams() {
 //        //Add the team to the task
 //        Team team1 = Team.builder()
@@ -569,8 +591,6 @@ public class AddTaskActivity extends AppCompatActivity implements OnMapReadyCall
 //        TeamDatabase.getInstance(this).teamDao().insertTeam(team3);
 
     }
-
-
 
 
 }

@@ -118,7 +118,7 @@
         android:layout_marginTop="15dp"
         android:layout_centerHorizontal="true"
         android:backgroundTint="#3BACB6"
-        android:drawableLeft="@drawable/add_task_icon"
+        android:drawableLeft="@drawable/ic_add_task"
         android:text="@string/addTaskB"
         android:textColor="@color/white" />
 

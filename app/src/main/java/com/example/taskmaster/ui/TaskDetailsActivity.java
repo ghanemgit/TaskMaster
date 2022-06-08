@@ -15,6 +15,7 @@ import android.os.Bundle;
 import android.os.Looper;
 import android.provider.Settings;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
@@ -61,9 +62,11 @@ import java.util.stream.Collectors;
 
 @RequiresApi(api = Build.VERSION_CODES.N)
 @SuppressLint({"SetTextI18n", "MissingPermission", "WrongThread"})
-public class TaskDetailsActivity extends AppCompatActivity implements OnMapReadyCallback {
+public class TaskDetailsActivity extends AppCompatActivity{
 
     private static final String TAG = TaskDetailsActivity.class.getSimpleName();
+
+    public static final String LATITUDE = "Latitude",LONGITUDE = "Longitude";
 
     private ImageView taskImageView, locationMarkerImage, translateImage, textToSpeechImage;
 
@@ -73,17 +76,9 @@ public class TaskDetailsActivity extends AppCompatActivity implements OnMapReady
 
     private TextView state, body, team, latitudeTextView, longitudeTextView;
 
-    private CardView mapCardView;
-
-    private final int PERMISSION_ID = 44;
+    private LoadingDialog loadingDialog;
 
     private Button deleteButton, editButton;
-
-    private double latitude, longitude;
-
-    private GoogleMap googleMap;
-
-    private FusedLocationProviderClient mFusedLocationProviderClient;
 
     private final MediaPlayer mp = new MediaPlayer();
 
@@ -101,7 +96,7 @@ public class TaskDetailsActivity extends AppCompatActivity implements OnMapReady
 
         setOnClickListeners();
 
-
+        Log.i(TAG, "onCreate: Task image code -> "+currentTask.getTaskImageCode());
         if (currentTask.getTaskImageCode() != null) {
             imageDownload();
             showTheImageInThePage();
@@ -114,102 +109,9 @@ public class TaskDetailsActivity extends AppCompatActivity implements OnMapReady
     protected void onResume() {
         super.onResume();
         Log.i(TAG, "onResume: Called");
-
     }
 
-    @Override
-    public void onMapReady(@NonNull GoogleMap googleMap) {
-        this.googleMap = googleMap;
-        prepareGoogleMaps();
-    }
 
-    private void prepareGoogleMaps() {
-
-        mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
-
-        //method to get the location
-        getLastLocation();
-
-        //get a handle to the fragment and register the callback
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().
-                findFragmentById(R.id.location_fragment);
-        mapFragment.getMapAsync(this);
-    }
-
-    private void getLastLocation() {
-        //check if the permission is given
-        if (checkPermissions()) {
-            if (isLocationEnabled()) {
-                //get last location from FusedLocationClient object
-                mFusedLocationProviderClient.getLastLocation().addOnCompleteListener(new OnCompleteListener<Location>() {
-                    @Override
-                    public void onComplete(@NonNull com.google.android.gms.tasks.Task<Location> task) {
-                        Location location = task.getResult();
-
-                        // the index 0 represent the latitude and the index 1 represent the longitude in coordinate list
-                        latitude = Double.parseDouble(currentTask.getCoordinates().get(0));
-                        longitude = Double.parseDouble(currentTask.getCoordinates().get(1));
-
-
-                        Log.i(TAG, "onComplete: The latitude and longitude is -> " + location.getLatitude() + "-> " + location.getLongitude());
-                        Log.i(TAG, "Google map is -> " + googleMap);
-                        googleMap.addMarker(new MarkerOptions()
-                                .position(new LatLng(latitude, longitude))
-                                .title("Marker"));
-                    }
-                });
-
-            } else {
-                Toast.makeText(this, "Please turn on your location....", Toast.LENGTH_SHORT).show();
-                Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-                startActivity(intent);
-            }
-        } else {
-            // if permission arent available request for permission
-            requestPermission();
-        }
-    }
-
-    private boolean checkPermissions() {
-
-        return ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
-                == PackageManager.PERMISSION_GRANTED
-                &&
-                ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-                        == PackageManager.PERMISSION_GRANTED;
-
-        /*
-         * If you want a background location in android 10 and higher use
-         * Manifest.permission.ACCESS_BACKGROUND_LOCATION
-         */
-    }
-
-    private boolean isLocationEnabled() {
-
-        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-
-        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
-                locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
-
-    }
-
-    private void requestPermission() {
-
-        ActivityCompat.requestPermissions(this, new String[]{
-                Manifest.permission.ACCESS_COARSE_LOCATION,
-                Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_ID);
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
-        if (requestCode == PERMISSION_ID) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                getLastLocation();
-            }
-        }
-    }
 
     public void setActionBarTitleButton(String title) {
 
@@ -265,9 +167,11 @@ public class TaskDetailsActivity extends AppCompatActivity implements OnMapReady
         deleteButton = findViewById(R.id.delete_button);
         editButton = findViewById(R.id.edit_button);
         taskImageView = findViewById(R.id.task_image);
-        mapCardView = findViewById(R.id.location_card_view);
+//        mapCardView = findViewById(R.id.location_card_view);
         translateImage = findViewById(R.id.translate_image);
         textToSpeechImage = findViewById(R.id.text_to_speech_image);
+        locationMarkerImage = findViewById(R.id.location_marker_image);
+        loadingDialog = new LoadingDialog(this);
     }
 
     private void setOnClickListeners() {
@@ -276,8 +180,8 @@ public class TaskDetailsActivity extends AppCompatActivity implements OnMapReady
 
         deleteButton.setOnClickListener(view -> deleteTaskButtonAction());
 
-        mapCardView.setOnClickListener(view -> {
-
+        locationMarkerImage.setOnClickListener(view -> {
+            navigateToMapsPage();
         });
 
         translateImage.setOnClickListener(view -> {
@@ -445,6 +349,14 @@ public class TaskDetailsActivity extends AppCompatActivity implements OnMapReady
         } catch (IOException error) {
             Log.e("MyAmplifyApp", "Error writing audio file", error);
         }
+
+    }
+    private void navigateToMapsPage(){
+
+        Intent intent = new Intent(this,MapsActivity.class);
+        intent.putExtra(LATITUDE,currentTask.getCoordinates().get(0));
+        intent.putExtra(LONGITUDE,currentTask.getCoordinates().get(1));
+        startActivity(intent);
 
     }
 }
