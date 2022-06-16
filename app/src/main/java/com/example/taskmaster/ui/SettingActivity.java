@@ -128,8 +128,6 @@ public class SettingActivity extends AppCompatActivity {
 
         Intent intent = new Intent(this, ResetPasswordActivity.class);
         intent.putExtra(ACTIVITY,SettingActivity.class.getSimpleName());
-        intent.putExtra(UserInfo.EMAIL,UserInfo.getDefaults(UserInfo.EMAIL,null,this));
-        intent.putExtra(UserInfo.getDefaults(UserInfo.EMAIL,null,this),UserInfo.getDefaults(UserInfo.PASSWORD,null,this));
         startActivity(intent);
     }
 

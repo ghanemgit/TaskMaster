@@ -60,8 +60,6 @@ public class EditUserDetailsActivity extends AppCompatActivity {
         setAdapterToStatesTeamArraySpinner();
         setUserInfoByUsingIntentToEnableEdit();
         buttonsAction();
-
-
     }
 
     @Override
@@ -194,9 +192,9 @@ public class EditUserDetailsActivity extends AppCompatActivity {
         attributes.add(new AuthUserAttribute(AuthUserAttributeKey.custom("custom:user_team_id"), selectedTeamId));
 
 
-        Log.i(TAG, "First NAme: "+firstNameEditString);
-        Log.i(TAG, "Last NAme: "+lastNameEditString);
-        Log.i(TAG, "Team NAme: "+selectedItemSpinnerString);
+        Log.i(TAG, "First Name: "+firstNameEditString);
+        Log.i(TAG, "Last Name: "+lastNameEditString);
+        Log.i(TAG, "Team Name: "+selectedItemSpinnerString);
         Log.i(TAG, "Team ID: "+selectedTeamId);
 
 

@@ -1,21 +1,13 @@
 package com.example.taskmaster.ui;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
-import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.location.Location;
-import android.location.LocationManager;
 import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Looper;
-import android.provider.Settings;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
@@ -27,8 +19,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.cardview.widget.CardView;
-import androidx.core.app.ActivityCompat;
 
 import com.amplifyframework.api.graphql.model.ModelMutation;
 import com.amplifyframework.core.Amplify;
@@ -36,20 +26,6 @@ import com.amplifyframework.core.model.query.Where;
 import com.amplifyframework.datastore.generated.model.Task;
 import com.amplifyframework.predictions.models.LanguageType;
 import com.example.taskmaster.R;
-
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationCallback;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationResult;
-import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.CameraPosition;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.tasks.OnCompleteListener;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -61,7 +37,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 @RequiresApi(api = Build.VERSION_CODES.N)
-@SuppressLint({"SetTextI18n", "MissingPermission", "WrongThread"})
+@SuppressLint({"SetTextI18n", "MissingPermission", "WrongThread","SdCardPath"})
 public class TaskDetailsActivity extends AppCompatActivity{
 
     private static final String TAG = TaskDetailsActivity.class.getSimpleName();
@@ -74,14 +50,13 @@ public class TaskDetailsActivity extends AppCompatActivity{
 
     private String teamName = "", downloadedImagePath;
 
-    private TextView state, body, team, latitudeTextView, longitudeTextView;
+    private TextView state, body, team;
 
     private LoadingDialog loadingDialog;
 
     private Button deleteButton, editButton;
 
     private final MediaPlayer mp = new MediaPlayer();
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -110,8 +85,6 @@ public class TaskDetailsActivity extends AppCompatActivity{
         super.onResume();
         Log.i(TAG, "onResume: Called");
     }
-
-
 
     public void setActionBarTitleButton(String title) {
 
@@ -196,12 +169,13 @@ public class TaskDetailsActivity extends AppCompatActivity{
 
     private void loadTaskInfoFromMain() {
 
-
         currentTask = MainActivity.tasksList.stream().filter(task1 -> task1.getId().equals(getIntent().getStringExtra("Position"))).collect(Collectors.toList()).get(0);
+        Log.i(TAG, "loadTaskInfoFromMain: Tasks id from edit page-> "+getIntent().getStringExtra("Position"));
+        Log.i(TAG, "loadTaskInfoFromMain: Tasks list -> "+MainActivity.tasksList);
+        Log.i(TAG, "loadTaskInfoFromMain: final current task "+currentTask);
+        Log.i(TAG, "loadTaskInfoFromMain: team list size-> "+SplashActivity.teamsList.size());
+        teamName = SplashActivity.teamsList.stream().filter(team1 -> team1.getId().equals(currentTask.getTeamTasksId())).collect(Collectors.toList()).get(0).getName();
 
-        Task finalCurrentTask = currentTask;
-
-        teamName = SplashActivity.teamsList.stream().filter(team1 -> team1.getId().equals(finalCurrentTask.getTeamTasksId())).collect(Collectors.toList()).get(0).getName();
     }
 
     private void showTheImageInThePage() {
@@ -258,8 +232,6 @@ public class TaskDetailsActivity extends AppCompatActivity{
                 response -> Log.i(TAG, "Todo with id: "),
                 error -> Log.e(TAG, "Create failed", error)
         );
-
-
     }
 
     public void editTask() {
@@ -269,7 +241,6 @@ public class TaskDetailsActivity extends AppCompatActivity{
         startActivity(intent);
     }
 
-    @SuppressLint("SdCardPath")
     private void imageDownload() {
         downloadedImagePath = "/data/data/com.example.taskmaster/files/";
         File file = new File(downloadedImagePath);
@@ -351,6 +322,7 @@ public class TaskDetailsActivity extends AppCompatActivity{
         }
 
     }
+
     private void navigateToMapsPage(){
 
         Intent intent = new Intent(this,MapsActivity.class);

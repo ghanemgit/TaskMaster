@@ -10,7 +10,6 @@ import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.Html;
-import android.text.InputType;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
 import android.util.Log;
@@ -21,7 +20,6 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -31,6 +29,7 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.MenuCompat;
+import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
@@ -47,7 +46,12 @@ import com.amplifyframework.datastore.AWSDataStorePlugin;
 import com.amplifyframework.datastore.generated.model.Task;
 import com.amplifyframework.predictions.aws.AWSPredictionsPlugin;
 import com.amplifyframework.storage.s3.AWSS3StoragePlugin;
+import com.example.taskmaster.Adapter.CustomListRecyclerViewAdapter;
+import com.example.taskmaster.Adapter.ViewPager2Adapter;
 import com.example.taskmaster.Auth.LoginActivity;
+import com.example.taskmaster.Fragments.CompletedTaskFragment;
+import com.example.taskmaster.Fragments.InProgressTaskFragment;
+import com.example.taskmaster.Fragments.NewTaskFragment;
 import com.example.taskmaster.R;
 import com.example.taskmaster.data.UserInfo;
 import com.google.android.gms.ads.AdError;
@@ -63,13 +67,14 @@ import com.google.android.gms.ads.rewarded.RewardItem;
 import com.google.android.gms.ads.rewarded.RewardedAd;
 import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.tabs.TabItem;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @RequiresApi(api = Build.VERSION_CODES.N)
-@SuppressLint("NotifyDataSetChanged")
-public class MainActivity extends AppCompatActivity {
+@SuppressLint({"NotifyDataSetChanged","MissingPermission"})
+public class MainActivity extends AppCompatActivity{
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
@@ -110,9 +115,7 @@ public class MainActivity extends AppCompatActivity {
 
         findAllViewsById();
 
-        loadABannerAdAd();
-
-        showBannerAd();
+        loadAllAds();
 
         onRefreshPullListener();
 
@@ -150,8 +153,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        loadAInterstitialAd();
-        loadRewardedAd();
+        if (isOnline()) loadAllAds();
         sortSpinner.setSelection(0);
         showUserNameOrTeam();
         Log.i(TAG, "onResume: called");
@@ -186,10 +188,19 @@ public class MainActivity extends AppCompatActivity {
         rotateClose = AnimationUtils.loadAnimation(this, R.anim.rotate_close_anm);
         fromBottom = AnimationUtils.loadAnimation(this, R.anim.from_bottom_anm);
         toBottom = AnimationUtils.loadAnimation(this, R.anim.to_buttom_anm);
-
     }
 
-    @SuppressLint("MissingPermission")
+    private void loadAllAds(){
+
+        loadABannerAdAd();
+
+        showBannerAd();
+
+        loadAInterstitialAd();
+
+        loadRewardedAd();
+    }
+
     private void loadABannerAdAd() {
 
         //This code for banner Ad
@@ -254,12 +265,12 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
                         // Handle the error
-                        Log.i(TAG, "On faild to load -> " + mInterstitialAd + " =>" + loadAdError.getMessage());
+                        Log.i(TAG, "On failed to load -> " + mInterstitialAd + " =>" + loadAdError.getMessage());
                         mInterstitialAd = null;
                     }
 
                 });
-        Log.i(TAG, "On faild to load -> " + mInterstitialAd);
+        Log.i(TAG, "On failed to load -> " + mInterstitialAd);
 
         //This code for Interstitial Ad
     }
@@ -296,7 +307,7 @@ public class MainActivity extends AppCompatActivity {
         if (mInterstitialAd != null) {
             mInterstitialAd.show(MainActivity.this);
         } else {
-            Log.d("TAG", "The interstitial ad wasn't ready yet.");
+            Log.d(TAG, "The interstitial ad wasn't ready yet.");
         }
     }
 
@@ -393,7 +404,10 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onRefresh() {
 
-                if (isOnline()) onlineFetchTasksData();
+                if (isOnline()) {
+                    onlineFetchTasksData();
+                    loadAllAds();
+                }
 
                 else offlineFetchTasksData();
 
@@ -401,7 +415,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
-
 
     public void configureAmplify() {
         try {
@@ -455,11 +468,13 @@ public class MainActivity extends AppCompatActivity {
                     if (tasks.hasData()) {
                         for (Task task : tasks.getData()) {
                             tasksList.add(task);
+                            Log.i(TAG, "The tasks title -> " + task.getTitle());
                         }
+                        runOnUiThread(() -> {
+                            getTasksListToHomePage(tasksList);
+                        });
                     }
-                    runOnUiThread(() -> {
-                        getTasksListToHomePage(tasksList);
-                    });
+
 
                     Log.i(TAG, "The tasks list from online fetch data method is -> " + tasksList.size());
 
@@ -668,14 +683,12 @@ public class MainActivity extends AppCompatActivity {
             else isClicked = false;
         });
         floatAddTaskButton.setOnClickListener(view -> {
-            navigateToAddTaskPage();
+           navigateToAddTaskPage();
         });
         interstitialAdFloatingButton.setOnClickListener(view -> {
-            loadAInterstitialAd();
             showInterstitialAd();
         });
         rewardedAdFloatingButton.setOnClickListener(view -> {
-            loadRewardedAd();
             showRewardedAd();
         });
     }
@@ -731,5 +744,4 @@ public class MainActivity extends AppCompatActivity {
         startActivity(intent);
         overridePendingTransition(0, 0);
     }
-
 }
