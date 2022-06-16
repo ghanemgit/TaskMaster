@@ -1,7 +1,6 @@
-package com.example.taskmaster.ui;
+package com.example.taskmaster.Adapter;
 
 
-import android.annotation.SuppressLint;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;

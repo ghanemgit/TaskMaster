@@ -37,7 +37,7 @@ public class ResetPasswordActivity extends AppCompatActivity {
     private static final String TAG = ResetPasswordActivity.class.getSimpleName();
     private EditText newPassword;
     private EditText confirmNewPassword;
-    private EditText verificationCode;
+    private EditText verificationCodeOrCurrentPassword;
     private CheckBox signOutFromAllDevicesCheckbox;
     private Button resetPasswordBtn;
     private String newPasswordString;
@@ -45,7 +45,7 @@ public class ResetPasswordActivity extends AppCompatActivity {
     private String confirmNewPasswordString;
     private String currentPassword;
     private String currentEmail;
-    private String verificationCodeString;
+    private String verificationCodeOrCurrentPasswordString;
     private LoadingDialog loadingDialog;
 
 
@@ -55,7 +55,9 @@ public class ResetPasswordActivity extends AppCompatActivity {
         setContentView(R.layout.activity_reset_password);
 
         checkFromAnyActivity();
+
         findAllViewById();
+
         buttonsAction();
     }
 
@@ -83,7 +85,6 @@ public class ResetPasswordActivity extends AppCompatActivity {
     private void checkFromAnyActivity() {
 
         isFromSettingsActivity = Objects.equals(getIntent().getStringExtra(SettingActivity.ACTIVITY), SettingActivity.class.getSimpleName());
-        currentPassword = UserInfo.getDefaults(currentEmail, null, this);
     }
 
     @SuppressLint("SetTextI18n")
@@ -91,16 +92,19 @@ public class ResetPasswordActivity extends AppCompatActivity {
         TextView pageTitle = findViewById(R.id.reset_password_Text);
         newPassword = findViewById(R.id.reset_password_box);
         confirmNewPassword = findViewById(R.id.confirm_reset_password_box);
-        verificationCode = findViewById(R.id.verification_code_box);
+        verificationCodeOrCurrentPassword = findViewById(R.id.verification_code_box);
         signOutFromAllDevicesCheckbox = findViewById(R.id.sign_out_from_all_devices_checkbox);
         resetPasswordBtn = findViewById(R.id.password_reset_button);
         TextInputLayout textInputLayout = findViewById(R.id.styled_edit_text_verification_code);
         loadingDialog = new LoadingDialog(ResetPasswordActivity.this);
-        currentEmail = getIntent().getStringExtra(UserInfo.getDefaults(UserInfo.EMAIL, null, this));
+        currentEmail = UserInfo.getDefaults(UserInfo.EMAIL, null, this);
+        currentPassword = UserInfo.getDefaults(currentEmail, null, this);
+        Log.i(TAG, "resetPasswordButtonAction: Current email -> "+currentEmail);
+        Log.i(TAG, "resetPasswordButtonAction: Current password -> "+currentPassword);
 
         if (isFromSettingsActivity) {
             textInputLayout.setHint("Current password");
-            verificationCode.setInputType(InputType.TYPE_TEXT_VARIATION_PASSWORD);
+            verificationCodeOrCurrentPassword.setInputType(InputType.TYPE_TEXT_VARIATION_PASSWORD);
             pageTitle.setText("Change Password");
         } else {
             textInputLayout.setHint("Verification Code");
@@ -119,7 +123,7 @@ public class ResetPasswordActivity extends AppCompatActivity {
 
         newPasswordString = newPassword.getText().toString();
         confirmNewPasswordString = confirmNewPassword.getText().toString();
-        verificationCodeString = verificationCode.getText().toString().trim();
+        verificationCodeOrCurrentPasswordString = verificationCodeOrCurrentPassword.getText().toString().trim();
     }
 
     private void resetPasswordButtonAction() {
@@ -142,30 +146,29 @@ public class ResetPasswordActivity extends AppCompatActivity {
             newPassword.setError("Password too short");
             confirmNewPassword.setError("Password too short");
 
-        } else if (TextUtils.isEmpty(verificationCode.getText())) {
+        } else if (TextUtils.isEmpty(verificationCodeOrCurrentPassword.getText())) {
 
             if (isFromSettingsActivity) {
 
-                verificationCode.setError("Enter current password");
+                verificationCodeOrCurrentPassword.setError("Enter current password");
 
             } else {
 
-                verificationCode.setError("Enter verification code");
+                verificationCodeOrCurrentPassword.setError("Enter verification code");
 
             }
 
-        } else if (!verificationCodeString.equals(currentPassword) && isFromSettingsActivity) {
+        } else if (!verificationCodeOrCurrentPasswordString.equals(currentPassword) && isFromSettingsActivity) {
+            verificationCodeOrCurrentPassword.setError("Wrong password");
 
-            verificationCode.setError("Wrong password");
-
-        } else if (newPasswordString.equals(verificationCodeString) && isFromSettingsActivity) {
+        } else if (newPasswordString.equals(verificationCodeOrCurrentPasswordString) && isFromSettingsActivity) {
             newPassword.setError("Password not Edited");
 
         } else if (!isFromSettingsActivity) {
             showLoadingDialog();
             Amplify.Auth.confirmResetPassword(
                     newPasswordString,
-                    verificationCodeString,
+                    verificationCodeOrCurrentPasswordString,
                     () -> {
                         Log.i(TAG, "New password confirmed");
                         updatePasswordInSharedPreferences();
@@ -190,16 +193,15 @@ public class ResetPasswordActivity extends AppCompatActivity {
             The verification code here is current password in case the user are
             already signed in and he want to change his\her password
             */
-            Amplify.Auth.updatePassword(verificationCodeString,
+            Amplify.Auth.updatePassword(verificationCodeOrCurrentPasswordString,
                     newPasswordString,
                     () -> {
                         Log.i(TAG, "Password Updated");
                         updatePasswordInSharedPreferences();
                         if (signOutFromAllDevicesCheckbox.isChecked()) {
                             signOutFromAllDevices();
-                        }else {
-                            signOut();
                         }
+                            signOut();
                     },
                     failure -> {
                         Log.i(TAG, "Password not Updated " + failure);

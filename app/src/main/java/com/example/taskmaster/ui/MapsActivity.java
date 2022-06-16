@@ -66,9 +66,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     protected void onResume() {
         Log.i(TAG, "onResume: Called");
         super.onResume();
-        if (checkPermissions()) {
-            prepareGoogleMaps();
-        }
+        prepareGoogleMaps();
     }
 
     @Override
@@ -111,12 +109,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                                     latitude = location.getLatitude();
                                     longitude = location.getLongitude();
                                 }
-                            }catch (NullPointerException nullPointerException){
+                            } catch (NullPointerException nullPointerException) {
                                 // the index 0 represent the latitude and the index 1 represent the longitude in coordinate list
                                 latitude = Double.parseDouble(getIntent().getStringExtra(TaskDetailsActivity.LATITUDE));
                                 longitude = Double.parseDouble(getIntent().getStringExtra(TaskDetailsActivity.LONGITUDE));
                             }
-
 
 
                             Log.i(TAG, "onComplete: The latitude and longitude is -> " + location.getLatitude() + "-> " + location.getLongitude());

@@ -28,27 +28,54 @@ import java.util.stream.Collectors;
 public class UpdateTaskActivity extends AppCompatActivity {
 
     private static final String TAG = UpdateTaskActivity.class.getSimpleName();
+    private Task oldTask;
     private Task newTask;
     private Team newTeam;
     private EditText taskTitle;
     private EditText taskDescription;
     private Spinner taskStateSpinner;
     private Spinner taskTeamSpinner;
+    private Button saveButton;
+    private Button backButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_update);
 
+        findAllViewById();
 
-        newTask = MainActivity.tasksList.stream().filter(task -> task.getId()
-                .equals(getIntent().getStringExtra("Id"))).collect(Collectors.toList()).get(0);
-        newTeam = SplashActivity.teamsList.stream().filter(team ->
-                team.getId().equals(newTask.getTeamTasksId())).collect(Collectors.toList()).get(0);
-        Button saveButton = findViewById(R.id.update_task_button);
-        Button backButton = findViewById(R.id.backToDescriptionPage);
+        prepareTaskAndTeam();
 
         initializeForm();
+
+        setButtonClickListener();
+
+        setAdapterToStatesTaskArraySpinner();
+
+        setAdapterToStatesTeamArraySpinner();
+    }
+
+    private void findAllViewById() {
+
+        taskTitle = findViewById(R.id.update_task_title_box);
+        taskDescription = findViewById(R.id.update_task_description_box);
+        taskStateSpinner = findViewById(R.id.update_task_states_spinner);
+        taskTeamSpinner = findViewById(R.id.task_team_update_spinner);
+        saveButton = findViewById(R.id.update_task_button);
+        backButton = findViewById(R.id.backToDescriptionPage);
+    }
+
+    private void prepareTaskAndTeam() {
+
+        oldTask = MainActivity.tasksList.stream().filter(task -> task.getId()
+                .equals(getIntent().getStringExtra("Id"))).collect(Collectors.toList()).get(0);
+        Log.i(TAG, "prepareTaskAndTeam: old task id -> "+oldTask.getId());
+        newTeam = SplashActivity.teamsList.stream().filter(team ->
+                team.getId().equals(oldTask.getTeamTasksId())).collect(Collectors.toList()).get(0);
+    }
+
+    private void setButtonClickListener() {
 
         saveButton.setOnClickListener(view -> {
             updateTask();
@@ -58,23 +85,25 @@ public class UpdateTaskActivity extends AppCompatActivity {
         backButton.setOnClickListener(view -> {
             backToTaskDetailsPage();
         });
-    }
 
+    }
 
     public void updateTask() {
 
-        Amplify.API.mutate(ModelMutation.update(newTeam),
-                response -> {
+        newTask = Task.builder().title(taskTitle.getText().toString())
+                .id(oldTask.getId())
+                .description(taskDescription.getText().toString())
+                .status(taskStateSpinner.getSelectedItem().toString())
+                .teamTasksId(newTeam.getId())
+                .build();
 
-                    Log.i(TAG, "Todo with id: " + response.getData().getId());
-                    Amplify.API.mutate(ModelMutation.update(newTask),
-                            pass -> Log.i(TAG, "Todo with id: " + pass.getData().getId()),
-                            error -> Log.e(TAG, "Create failed", error)
-                    );
+
+        Amplify.API.mutate(ModelMutation.update(newTask),
+                pass -> {
+                    Log.i(TAG, "API update done the task id is: " + pass.getData().getId());
                 },
-                error -> Log.e(TAG, "Create failed", error)
+                error -> Log.e(TAG, "Update failed", error)
         );
-
 
         Amplify.DataStore.query(Team.class, Where.id(newTeam.getId()),
                 matchesTeam -> {
@@ -86,33 +115,34 @@ public class UpdateTaskActivity extends AppCompatActivity {
                         Amplify.DataStore.save(editedTeam,
 
                                 updated -> {
-                                    Log.i(TAG, "Updated a post.");
+                                    Log.i(TAG, "Updated a team.");
 
-                                    Amplify.DataStore.query(Task.class, Where.id(newTask.getId()),
+                                    Amplify.DataStore.query(Task.class, Where.id(oldTask.getId()),
                                             matchesTask -> {
                                                 if (matchesTask.hasNext()) {
                                                     Task originalTask = matchesTask.next();
                                                     Task editedTask = originalTask.copyOfBuilder()
                                                             .title(taskTitle.getText().toString())
+                                                            .id(originalTask.getId())
                                                             .description(taskDescription.getText().toString())
                                                             .status(taskStateSpinner.getSelectedItem().toString())
-                                                            .teamTasksId(taskTeamSpinner.getSelectedItem().toString())
+                                                            .teamTasksId(newTeam.getId())
                                                             .build();
                                                     Amplify.DataStore.save(editedTask,
-                                                            updatedTask -> Log.i("MyAmplifyApp", "Updated a post."),
-                                                            failureTask -> Log.e("MyAmplifyApp", "Update failed.", failureTask)
+                                                            updatedTask -> Log.i(TAG, "Updated a task."),
+                                                            failureTask -> Log.e(TAG, "Update failed.", failureTask)
                                                     );
                                                 }
                                             },
-                                            failure -> Log.e("MyAmplifyApp", "Query failed.", failure)
+                                            failure -> Log.e(TAG, "Query failed.", failure)
                                     );
                                 },
-                                failure -> Log.e("MyAmplifyApp", "Update failed.", failure)
+                                failure -> Log.e(TAG, "Update failed.", failure)
                         );
 
                     }
                 },
-                failure -> Log.e("MyAmplifyApp", "Query failed.", failure)
+                failure -> Log.e(TAG, "Query failed.", failure)
         );
 
 
@@ -122,16 +152,7 @@ public class UpdateTaskActivity extends AppCompatActivity {
 
     public void initializeForm() {
 
-        setAdapterToStatesTaskArraySpinner();
-        setAdapterToStatesTeamArraySpinner();
-
-        taskTitle = findViewById(R.id.update_task_title_box);
-        taskDescription = findViewById(R.id.update_task_description_box);
-        taskStateSpinner = findViewById(R.id.update_task_states_spinner);
-        taskTeamSpinner = findViewById(R.id.task_team_update_spinner);
-
-
-        String compareValue = newTask.getStatus();
+        String compareValue = oldTask.getStatus();
 
         int spinnerPosition;
         switch (compareValue) {
@@ -149,10 +170,8 @@ public class UpdateTaskActivity extends AppCompatActivity {
         }
         taskTeamSpinner.setSelection(0);
         taskStateSpinner.setSelection(spinnerPosition);
-        taskTitle.setText(newTask.getTitle());
-        taskDescription.setText(newTask.getDescription());
-
-
+        taskTitle.setText(oldTask.getTitle());
+        taskDescription.setText(oldTask.getDescription());
     }
 
     private void setAdapterToStatesTaskArraySpinner() {
